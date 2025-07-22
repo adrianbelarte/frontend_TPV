@@ -29,3 +29,10 @@ Proyecto frontend basado en React, TypeScript y Vite, con configuración de ESLi
 ```bash
 git clone <url-del-repositorio>
 cd frontend
+
+Instalación
+
+-npm install
+-npm create vite .
+-npm install react-router-dom
+-npm run dev
