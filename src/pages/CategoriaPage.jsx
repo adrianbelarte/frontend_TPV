@@ -1,8 +1,10 @@
-// src/pages/CierreCaja.jsx
+import CategoriaContainer from "../components/Categoria/CategoriaContainer";
+
+
 export default function CategoriaPage() {
   return (
-    <div>
-      <h1>Categorias</h1>
-    </div>
+    <>
+      <CategoriaContainer />
+    </>
   );
 }

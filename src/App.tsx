@@ -12,6 +12,9 @@ import ProductoPage from "./pages/ProductoPage";
 import TicketPage from "./pages/TicketPage";
 import VentaTotalPage from "./pages/VentaTotalPage";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 function Navigation() {
   const { isLoggedIn, logout } = useContext(AuthContext);
 
@@ -42,6 +45,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Navigation />
+        <ToastContainer />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />

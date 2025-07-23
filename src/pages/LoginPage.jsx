@@ -1,8 +1,12 @@
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import Login from "../components/Login";
 
 export default function LoginPage() {
-  function handleLoginSuccess() {
-    // Aquí puedes redirigir o cambiar estado global, etc.
+  const { login } = useContext(AuthContext);
+
+  function handleLoginSuccess(token) {
+    login(token);
     alert("¡Login exitoso!");
   }
 
