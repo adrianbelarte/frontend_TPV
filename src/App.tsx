@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import PrivateRoute from "./components/PrivateRoute";
 
-import Home from "./pages/Home";
+import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import CategoriaPage from "./pages/CategoriaPage";
 import EmpresaPage from "./pages/EmpresaPage";
@@ -26,7 +26,7 @@ function Navigation() {
         <li><Link to="/empresa">Empresas</Link></li>
         <li><Link to="/producto">Productos</Link></li>
         <li><Link to="/ticket">Tickets</Link></li>
-        <li><Link to="/ventaTotal">Ventas</Link></li>
+        <li><Link to="/ventaTotal">Cierre caja</Link></li>
 
         {isLoggedIn ? (
           <>
@@ -47,15 +47,36 @@ export default function App() {
         <Navigation />
         <ToastContainer />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
 
           {/* Rutas públicas (solo lectura) */}
-          <Route path="/categoria" element={<CategoriaPage />} />
-          <Route path="/empresa" element={<EmpresaPage />} />
-          <Route path="/producto" element={<ProductoPage />} />
-          <Route path="/ticket" element={<TicketPage />} />
-          <Route path="/ventaTotal" element={<VentaTotalPage />} />
+          <Route path="/categoria" element={
+  <PrivateRoute>
+    <CategoriaPage />
+  </PrivateRoute>
+} />
+<Route path="/empresa" element={
+  <PrivateRoute>
+    <EmpresaPage />
+  </PrivateRoute>
+} />
+<Route path="/producto" element={
+  <PrivateRoute>
+    <ProductoPage />
+  </PrivateRoute>
+} />
+<Route path="/ticket" element={
+  <PrivateRoute>
+    <TicketPage />
+  </PrivateRoute>
+} />
+<Route path="/ventaTotal" element={
+  <PrivateRoute>
+    <VentaTotalPage />
+  </PrivateRoute>
+} />
+
 
           {/* Rutas protegidas para acciones admin (crear/editar/borrar) */}
           {/* Por ejemplo podrías crear rutas específicas o proteger componentes según la acción */}

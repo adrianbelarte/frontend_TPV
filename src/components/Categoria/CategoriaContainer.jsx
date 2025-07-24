@@ -1,6 +1,8 @@
+// src/components/categoria/CategoriaContainer.jsx
 import { useEffect, useState, useContext } from "react";
 import CategoriaList from "./CategoriaList";
 import CategoriaForm from "./CategoriaForm";
+import ProductoList from "../producto/ProductoList";
 import { AuthContext } from "../../context/AuthContext";
 import { authFetch } from "../../utils/authFetch";
 import { toast } from 'react-toastify';
@@ -8,6 +10,7 @@ import { toast } from 'react-toastify';
 export default function CategoriaContainer() {
   const { isLoggedIn } = useContext(AuthContext);
   const [categorias, setCategorias] = useState([]);
+  const [productos, setProductos] = useState([]); 
   const [error, setError] = useState(null);
   const [categoriaEdit, setCategoriaEdit] = useState(null);
 
@@ -24,7 +27,50 @@ export default function CategoriaContainer() {
     }
   }
 
-async function handleSave(categoria) {
+  async function handleCategoriaClick(cat) {
+    try {
+      const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias/${cat.id}/productos`);
+      setProductos(data);
+    } catch (err) {
+      setError("Error al cargar productos: " + err.message);
+    }
+  }
+
+  async function handleProductoClick(producto) {
+    try {
+      const body = {
+        fecha: new Date(),
+        tipo_pago: "efectivo",
+        total: producto.precio,
+        productos: [
+          {
+            productoId: producto.id,
+            cantidad: 1,
+          },
+        ],
+      };
+
+      await authFetch(`${import.meta.env.VITE_BASE_URL}/api/tickets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      toast.success(`Ticket creado para ${producto.nombre}`);
+    } catch (err) {
+      toast.error("Error al crear ticket: " + err.message);
+    }
+  }
+
+  function handleEdit(cat) {
+    setCategoriaEdit(cat);
+  }
+
+  function handleCancel() {
+    setCategoriaEdit(null);
+  }
+
+  async function handleSave(categoria) {
   try {
     const method = categoria.id ? "PUT" : "POST";
     const url = categoria.id
@@ -37,37 +83,14 @@ async function handleSave(categoria) {
       body: JSON.stringify(categoria),
     });
 
-    await fetchCategorias();
+    toast.success(`Categoría ${categoria.id ? 'actualizada' : 'creada'} correctamente`);
     setCategoriaEdit(null);
-    toast.success(`Categoría ${categoria.id ? "actualizada" : "creada"} con éxito`);
+    fetchCategorias(); // recarga la lista
   } catch (err) {
-    setError(err.message);
-    toast.error(`Error: ${err.message}`);
+    toast.error("Error al guardar la categoría: " + err.message);
   }
 }
 
-
-  async function handleDelete(id) {
-    if (!window.confirm("¿Estás seguro de que quieres eliminar esta categoría?")) return;
-
-    try {
-      const url = `${import.meta.env.VITE_BASE_URL}/api/categorias/${id}`;
-      await authFetch(url, { method: "DELETE" });
-      await fetchCategorias();
-      toast.success("Categoría eliminada con éxito");
-    } catch (err) {
-      setError(err.message);
-      toast.error(`Error: ${err.message}`);
-    }
-  }
-
-  function handleEdit(cat) {
-    setCategoriaEdit(cat);
-  }
-
-  function handleCancel() {
-    setCategoriaEdit(null);
-  }
 
   return (
     <>
@@ -86,8 +109,18 @@ async function handleSave(categoria) {
       <CategoriaList
         categorias={categorias}
         onEdit={isLoggedIn ? handleEdit : null}
-        onDelete={isLoggedIn ? handleDelete : null}
+        onDelete={isLoggedIn ? async (id) => {
+          if (window.confirm("¿Eliminar categoría?")) {
+            await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias/${id}`, { method: "DELETE" });
+            fetchCategorias();
+          }
+        } : null}
+        onClick={handleCategoriaClick} // 👈 importante
       />
+
+      {productos.length > 0 && (
+        <ProductoList productos={productos} onProductoClick={handleProductoClick} />
+      )}
     </>
   );
 }

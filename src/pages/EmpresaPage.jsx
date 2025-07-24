@@ -1,8 +1,5 @@
-// src/pages/CierreCaja.jsx
+import EmpresaContainer from "../components/Empresa/EmpresaContainer";
+
 export default function EmpresaPage() {
-  return (
-    <div>
-      <h1>Empresa</h1>
-    </div>
-  );
+  return <EmpresaContainer />;
 }
