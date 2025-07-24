@@ -1,8 +1,9 @@
-// src/pages/CierreCaja.jsx
+import TicketsContainer from "../components/Ticket/TicketsContainer";
+
 export default function TicketPage() {
   return (
-    <div>
-      <h1>Tickets</h1>
-    </div>
+    <>
+          <TicketsContainer />
+        </>
   );
 }

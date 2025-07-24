@@ -10,7 +10,9 @@ import CategoriaPage from "./pages/CategoriaPage";
 import EmpresaPage from "./pages/EmpresaPage";
 import ProductoPage from "./pages/ProductoPage";
 import TicketPage from "./pages/TicketPage";
-import VentaTotalPage from "./pages/VentaTotalPage";
+import CierreCajaPage from "./pages/CierreCajaPage";
+
+
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,8 +28,8 @@ function Navigation() {
         <li><Link to="/empresa">Empresas</Link></li>
         <li><Link to="/producto">Productos</Link></li>
         <li><Link to="/ticket">Tickets</Link></li>
-        <li><Link to="/ventaTotal">Cierre caja</Link></li>
-
+        <li><Link to="/cierre-caja">Cierre caja</Link></li>
+        
         {isLoggedIn ? (
           <>
             <li><button onClick={logout}>Cerrar sesión</button></li>
@@ -71,11 +73,13 @@ export default function App() {
     <TicketPage />
   </PrivateRoute>
 } />
-<Route path="/ventaTotal" element={
+<Route path="/cierre-caja" element={
   <PrivateRoute>
-    <VentaTotalPage />
+    <CierreCajaPage />
   </PrivateRoute>
 } />
+
+
 
 
           {/* Rutas protegidas para acciones admin (crear/editar/borrar) */}
