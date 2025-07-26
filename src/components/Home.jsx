@@ -1,196 +1,145 @@
 import { useEffect, useState } from "react";
 import { authFetch } from "../utils/authFetch";
+import "../pages/Home/HomePage.css"
 
 export default function HomePOS() {
   const [categorias, setCategorias] = useState([]);
-  const [productos, setProductos] = useState([]);
-  const [productosVisibles, setProductosVisibles] = useState([]); // según la categoría
-  const [venta, setVenta] = useState([]); // [{ producto, cantidad }]
-  const [ventaSeleccionada, setVentaSeleccionada] = useState([])
+  const [productosVisibles, setProductosVisibles] = useState([]);
+  const [venta, setVenta] = useState([]);
+  const [seleccion, setSeleccion] = useState([]);
 
   useEffect(() => {
-    fetchCategorias();
+    // Carga categorías y productos sin categoría al inicio
+    authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias`)
+      .then(setCategorias);
     fetchProductosSinCategoria();
   }, []);
 
-  async function fetchCategorias() {
-    const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias`);
-    setCategorias(data);
-  }
+  // Función para cargar productos sin categoría
+  const fetchProductosSinCategoria = async () => {
+    try {
+      const allProductos = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/productos`);
+      const sinCategoria = allProductos.filter(p => !p.categoriaId);
+      setProductosVisibles(sinCategoria);
+    } catch (err) {
+      alert("Error cargando productos sin categoría: " + err.message);
+    }
+  };
 
-  async function fetchProductosSinCategoria() {
-    const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/productos`);
-    const sinCategoria = data.filter((p) => !p.categoriaId);
-    setProductosVisibles(sinCategoria);
-  }
+  // Función para filtrar productos según categoría o sin categoría si catId es null
+  const filtrarCategoria = async (catId) => {
+    if (catId === null) {
+      // Mostrar productos sin categoría
+      fetchProductosSinCategoria();
+      return;
+    }
 
-  async function handleCategoriaClick(cat) {
-    const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias/${cat.id}/productos`);
-    setProductosVisibles(data);
-  }
+    try {
+      const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias/${catId}/productos`);
+      setProductosVisibles(data);
+    } catch (err) {
+      alert("Error cargando productos de la categoría: " + err.message);
+    }
+  };
 
-  function handleProductoClick(prod) {
-    setVenta((prev) => {
-      const existente = prev.find((item) => item.producto.id === prod.id);
-      if (existente) {
-        return prev.map((item) =>
-          item.producto.id === prod.id
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item
-        );
-      } else {
-        return [...prev, { producto: prod, cantidad: 1 }];
-      }
+  // ... resto del código queda igual
+
+  const agregarProd = (prod) => {
+    setVenta(prev => {
+      const ex = prev.find(i => i.producto.id === prod.id);
+      if (ex) return prev.map(i => i.producto.id === prod.id
+        ? { ...i, cantidad: i.cantidad + 1 }
+        : i);
+      return [...prev, { producto: prod, cantidad: 1 }];
     });
-  }
+  };
 
-  
+  const eliminarProd = prodId => {
+    setVenta(prev => {
+      const ex = prev.find(i => i.producto.id === prodId);
+      if (!ex) return prev;
+      if (ex.cantidad > 1) {
+        return prev.map(i => i.producto.id === prodId
+          ? { ...i, cantidad: i.cantidad - 1 } : i);
+      }
+      return prev.filter(i => i.producto.id !== prodId);
+    });
+  };
 
-  function handlePagar(tipo_pago) {
-    if (venta.length === 0) return alert("No hay productos en la venta");
+  const toggleSelect = prodId => {
+    setSeleccion(prev => prev.includes(prodId)
+      ? prev.filter(id => id !== prodId) : [...prev, prodId]);
+  };
 
-    const total = venta.reduce((sum, item) => sum + item.producto.precio * item.cantidad, 0);
-
-    const payload = {
-      fecha: new Date(),
-      tipo_pago,
-      total,
-      productos: venta.map((item) => ({
-        productoId: item.producto.id,
-        cantidad: item.cantidad,
-      })),
-    };
-
+  const pagar = tipo =>
     authFetch(`${import.meta.env.VITE_BASE_URL}/api/tickets`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then(() => {
-        alert("Venta realizada con éxito");
-        setVenta([]);
+      body: JSON.stringify({
+        tipo_pago: tipo,
+        fecha: new Date(),
+        total: venta.reduce((s, i) => s + i.cantidad * i.producto.precio, 0),
+        productos: venta.map(i => ({ productoId: i.producto.id, cantidad: i.cantidad }))
       })
-      .catch((err) => {
-        alert("Error al registrar la venta: " + err.message);
-      });
-  }
-
-  function handleEliminarProducto(prodId) {
-  setVenta((prev) => {
-    const existente = prev.find((item) => item.producto.id === prodId);
-    if (!existente) return prev;
-
-    if (existente.cantidad > 1) {
-      return prev.map((item) =>
-        item.producto.id === prodId
-          ? { ...item, cantidad: item.cantidad - 1 }
-          : item
-      );
-    }
-
-    // Si la cantidad es 1, lo quitamos de la lista
-    return prev.filter((item) => item.producto.id !== prodId);
-  });
-}
-
-function toggleSeleccion(prodId) {
-  setVentaSeleccionada((prev) =>
-    prev.includes(prodId)
-      ? prev.filter(id => id !== prodId)
-      : [...prev, prodId]
-  );
-}
-
-
-
-  
+    })
+    .then(() => setVenta([]))
+    .catch(e => alert(e.message));
 
   return (
-    <div>
-      <h1>Punto de Venta</h1>
-
-      {/* Categorías */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-        {categorias.map((cat) => (
-          <button key={cat.id} onClick={() => handleCategoriaClick(cat)}>
-            {cat.nombre}
-          </button>
-        ))}
-        <button onClick={fetchProductosSinCategoria}>Sin categoría</button>
-      </div>
-
-      {/* Productos visibles */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 20 }}>
-        {productosVisibles.map((prod) => (
-          <div key={prod.id} onClick={() => handleProductoClick(prod)} style={{ border: "1px solid #ccc", padding: 10, cursor: "pointer" }}>
-            <strong>{prod.nombre}</strong><br />
-            {prod.precio} €
-            {prod.imagen && <img src={prod.imagen} style={{ width: 80, display: "block" }} />}
-          </div>
-        ))}
-      </div>
-
-      {/* Venta en curso */}
-      <div style={{ marginTop: 30 }}>
-        <h2>Venta actual</h2>
-        {venta.length === 0 ? (
-          <p>No hay productos añadidos</p>
-        ) : (
-<ul style={{ listStyle: "none", padding: 0 }}>
-  {venta.map((item) => {
-    const seleccionado = ventaSeleccionada.includes(item.producto.id);
-    return (
-      <li
-        key={item.producto.id}
-        onClick={() => toggleSeleccion(item.producto.id)}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: 8,
-          marginBottom: 5,
-          backgroundColor: seleccionado ? "#cce5ff" : "#f9f9f9",
-          border: "1px solid #ccc",
-          borderRadius: 4,
-          cursor: "pointer",
-        }}
-        title="Haz clic para seleccionar/desmarcar para pago parcial"
-      >
-        <span>
-          {item.producto.nombre} x {item.cantidad} = {(item.producto.precio * item.cantidad).toFixed(2)} €
-        </span>
-        <button
-          onClick={(e) => {
-            e.stopPropagation(); // para que no se dispare toggleSeleccion
-            handleEliminarProducto(item.producto.id);
-          }}
-          style={{
-            background: "red",
-            color: "white",
-            border: "none",
-            borderRadius: "50%",
-            width: 24,
-            height: 24,
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          ×
-        </button>
-      </li>
-    );
-  })}
-</ul>
-
-
-        )}
-
-        {venta.length > 0 && (
-          <div>
-            <button onClick={() => handlePagar("efectivo")}>Pagar en efectivo</button>
-            <button onClick={() => handlePagar("tarjeta")}>Pagar con tarjeta</button>
+    <div className="homepos-container">
+      <div className="categorias-section">
+        {categorias.map(c =>
+          <div key={c.id} className="categoria-card"
+               onClick={() => filtrarCategoria(c.id)}>
+            {c.imagen
+              ? <img src={c.imagen} alt={c.nombre} />
+              : <span>{c.nombre}</span>}
           </div>
         )}
+        <div className="categoria-card" onClick={() => filtrarCategoria(null)}>
+          Sin categoría
+        </div>
+      </div>
+
+      <div className="main-layout">
+        <div className="venta-actual">
+          <h2>Venta actual</h2>
+          <ul>
+            {venta.map(item => (
+              <li key={item.producto.id}
+                  className={seleccion.includes(item.producto.id) ? "seleccionado" : ""}
+                  onClick={() => toggleSelect(item.producto.id)}>
+                <span>{item.producto.nombre} x {item.cantidad} = {(item.producto.precio * item.cantidad).toFixed(2)} €</span>
+                <button onClick={e => { e.stopPropagation(); eliminarProd(item.producto.id); }}>✖️</button>
+              </li>
+            ))}
+          </ul>
+          {venta.length > 0 &&
+            <div className="botones-pago">
+              <button onClick={() => pagar("efectivo")}>
+                <div className="icono">💶</div>
+                <div className="texto">Pago en efectivo</div>
+              </button>
+              <button onClick={() => pagar("tarjeta")}>
+                <div className="icono">💳</div>
+                <div className="texto">Pago con tarjeta</div>
+              </button>
+            </div>
+          }
+        </div>
+
+        <div className="productos-visibles">
+          {productosVisibles.map(p => (
+            <div key={p.id} className="producto-card" onClick={() => agregarProd(p)}>
+              <strong>{p.nombre}</strong>
+              <div>{p.precio} €</div>
+              {p.imagen
+                ? <img src={p.imagen} alt={p.nombre} />
+                : <div className="placeholder">{p.nombre}</div>
+              }
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

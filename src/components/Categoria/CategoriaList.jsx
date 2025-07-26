@@ -1,10 +1,20 @@
-// src/components/categoria/CategoriaList.jsx
 export default function CategoriaList({ categorias, onEdit, onDelete, onClick }) {
   return (
     <ul>
+      {/* Opción Sin categoría */}
+      <li 
+        key="sin-categoria" 
+        onClick={() => onClick?.(null)} 
+        style={{ cursor: "pointer", marginBottom: "10px", fontWeight: "bold" }}
+      >
+        <div>
+          <strong>Sin categoría</strong>
+        </div>
+      </li>
+
       {categorias.map((cat) => (
         <li key={cat.id} onClick={() => onClick?.(cat)} style={{ cursor: "pointer" }}>
-          <div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             {cat.imagen && (
               <img
                 src={cat.imagen}

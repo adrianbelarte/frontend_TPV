@@ -1,0 +1,282 @@
+/* --- Wrapper general --- */
+.homepos-container {
+  width: 1024px;
+  height: 768px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: #f0f0f0;
+  margin: 0 auto;
+  border: 2px solid #0077cc;
+  border-radius: 10px;
+}
+
+
+
+
+/* --- Navbar arriba --- */
+.navbar {
+  height: 60px;
+  background-color: #0050a0;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 1.5rem;
+}
+
+/* --- Categorías --- */
+.categorias-section {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 5px;
+  margin: 2px;
+  background: #ffffff;
+  gap: 10px;
+  min-height: 110px;
+  max-height: 160px;
+  overflow-y: auto;
+  border: 2px solid #0077cc;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 119, 204, 0.3);
+}
+
+.categoria-card {
+  width: 100px;
+  height: 80px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+}
+
+.categoria-card img {
+  max-width: 80px;
+  max-height: 60px;
+  object-fit: contain;
+}
+
+/* --- Cuerpo principal dividido --- */
+.main-layout {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  gap: 10px;
+}
+
+/* --- Venta --- */
+.venta-actual {
+  width: 35%;
+  background: #ffffff;
+  border: 2px solid #0077cc;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 2px; 
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* oculta desbordes internos */
+  box-shadow: 0 2px 8px rgba(0, 119, 204, 0.2);
+  max-height: calc(100vh - 20px); /* 🔧 evita que se salga de la pantalla */
+  box-sizing: border-box;
+}
+
+
+.venta-actual ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  overflow-y: auto;
+  /* Agrego scrollbar estilizado */
+  scrollbar-width: thin;
+  scrollbar-color: #0077cc #e0e0e0;
+}
+
+.venta-actual ul::-webkit-scrollbar {
+  width: 6px;
+}
+
+.venta-actual ul::-webkit-scrollbar-track {
+  background: #e0e0e0;
+  border-radius: 8px;
+}
+
+.venta-actual ul::-webkit-scrollbar-thumb {
+  background-color: #0077cc;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+}
+
+.venta-actual li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f8f8;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: background 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+  user-select: none; /* evita selección accidental al clickear */
+}
+
+.venta-actual li:hover {
+  background: #e6f2ff;
+  box-shadow: 0 4px 8px rgba(0, 119, 204, 0.2);
+}
+
+.venta-actual li.seleccionado {
+  background-color: #d4f0d4;
+  box-shadow: 0 0 8px #51cf66;
+}
+
+
+.venta-actual button {
+  color: wheat;
+  background-color:whitesmoke;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  font-size: 16px;     /* ajusta tamaño para que no se salga */
+  line-height: 1;      /* evitar líneas adicionales */
+  padding: 0;          /* eliminar padding para evitar overflow */
+  user-select: none;   /* evitar selección accidental */
+}
+
+
+.botones-pago {
+  margin-top: auto;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  height: 70px; /* o ajusta según tu diseño */
+}
+
+.botones-pago button {
+  flex: 1;
+  background-color: #339af0;
+  color: white;
+  padding: 2px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around; /* distribuir mejor el icono y texto */
+  cursor: pointer;
+  transition: background 0.3s;
+  height: 100%; /* que ocupe todo el alto del contenedor */
+}
+
+.botones-pago button:first-child {
+  background-color: #51cf66;
+}
+
+.botones-pago button:hover {
+  opacity: 0.9;
+}
+
+.botones-pago button .icono {
+  font-size: 32px;
+  line-height: 1;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.botones-pago button .texto {
+  font-size: 14px;
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: center;
+}
+
+
+
+/* --- Productos --- */
+.productos-visibles {
+  width: 65%;
+  padding: 5px;
+  margin: 2px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 2px solid #0077cc;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 119, 204, 0.2);
+  max-height: calc(100vh - 20px); /* Ajusta el 20px según el margen superior/inferior que desees */
+
+}
+
+.producto-card {
+  background: #fff;
+  border: 2px solid #0077cc;
+  border-radius: 12px;
+  padding: 2px 2px;
+  text-align: center;
+  font-size: 1rem;
+  cursor: pointer;
+
+  height: 120px; /* un poco más alto para mejor espacio */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* espacio entre nombre e imagen */
+  box-shadow: 0 2px 6px rgba(0, 119, 204, 0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+  user-select: none; /* evitar selección al tocar */
+}
+
+.producto-card:hover, 
+.producto-card:focus {
+  box-shadow: 0 4px 12px rgba(0, 119, 204, 0.35);
+  transform: translateY(-3px);
+  outline: none;
+}
+
+.producto-card strong {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #0077cc;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.producto-card img {
+  max-width: 100%;
+  height: 70px;
+  object-fit: contain;
+  margin-top: 6px;
+  pointer-events: none; /* evita que imagen interfiera con clics */
+}
+
+.placeholder {
+  background: #ddd;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 0.9rem;
+  user-select: none;
+}
+

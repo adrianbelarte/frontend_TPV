@@ -1,4 +1,3 @@
-// src/components/categoria/CategoriaContainer.jsx
 import { useEffect, useState, useContext } from "react";
 import CategoriaList from "./CategoriaList";
 import CategoriaForm from "./CategoriaForm";
@@ -29,7 +28,15 @@ export default function CategoriaContainer() {
 
   async function handleCategoriaClick(cat) {
     try {
-      const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias/${cat.id}/productos`);
+      let data;
+      if (!cat || cat.id == null) {
+        // Productos sin categoría
+        data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/productos`);
+        data = data.filter(p => !p.categoriaId);
+      } else {
+        // Productos de categoría específica
+        data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias/${cat.id}/productos`);
+      }
       setProductos(data);
     } catch (err) {
       setError("Error al cargar productos: " + err.message);
@@ -71,26 +78,25 @@ export default function CategoriaContainer() {
   }
 
   async function handleSave(categoria) {
-  try {
-    const method = categoria.id ? "PUT" : "POST";
-    const url = categoria.id
-      ? `${import.meta.env.VITE_BASE_URL}/api/categorias/${categoria.id}`
-      : `${import.meta.env.VITE_BASE_URL}/api/categorias`;
+    try {
+      const method = categoria.id ? "PUT" : "POST";
+      const url = categoria.id
+        ? `${import.meta.env.VITE_BASE_URL}/api/categorias/${categoria.id}`
+        : `${import.meta.env.VITE_BASE_URL}/api/categorias`;
 
-    await authFetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(categoria),
-    });
+      await authFetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(categoria),
+      });
 
-    toast.success(`Categoría ${categoria.id ? 'actualizada' : 'creada'} correctamente`);
-    setCategoriaEdit(null);
-    fetchCategorias(); // recarga la lista
-  } catch (err) {
-    toast.error("Error al guardar la categoría: " + err.message);
+      toast.success(`Categoría ${categoria.id ? 'actualizada' : 'creada'} correctamente`);
+      setCategoriaEdit(null);
+      fetchCategorias(); // recarga la lista
+    } catch (err) {
+      toast.error("Error al guardar la categoría: " + err.message);
+    }
   }
-}
-
 
   return (
     <>
@@ -115,7 +121,7 @@ export default function CategoriaContainer() {
             fetchCategorias();
           }
         } : null}
-        onClick={handleCategoriaClick} // 👈 importante
+        onClick={handleCategoriaClick} // 👈 aquí incluimos el manejador
       />
 
       {productos.length > 0 && (
