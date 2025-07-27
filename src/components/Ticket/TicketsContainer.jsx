@@ -1,7 +1,8 @@
 // src/components/Ticket/TicketsContainer.jsx
 import { useEffect, useState } from "react";
 import { authFetch } from "../../utils/authFetch";
-import TicketDetalle from "./TicketDetail";
+import TicketDetail from "./TicketDetail";
+import "./TicketsContainer.css";
 
 export default function TicketsContainer() {
   const [tickets, setTickets] = useState([]);
@@ -21,20 +22,14 @@ export default function TicketsContainer() {
   }
 
   return (
-    <div style={{ display: "flex", gap: "2rem" }}>
-      <div style={{ width: "40%", borderRight: "1px solid #ccc", paddingRight: "1rem" }}>
-        <h2>Lista de Tickets</h2>
-        <ul style={{ listStyle: "none", padding: 0 }}>
+    <div className="tickets-container">
+      <div className="tickets-list">
+        <ul>
           {tickets.map(ticket => (
             <li
               key={ticket.id}
               onClick={() => setTicketSeleccionado(ticket)}
-              style={{
-                padding: "0.5rem",
-                borderBottom: "1px solid #eee",
-                cursor: "pointer",
-                backgroundColor: ticketSeleccionado?.id === ticket.id ? "#f0f0f0" : "transparent"
-              }}
+              className={ticketSeleccionado?.id === ticket.id ? "selected" : ""}
             >
               <strong>Ticket #{ticket.id}</strong> — {ticket.fecha?.slice(0, 10)} — {ticket.tipo_pago || "Sin pago"}
               <br />
@@ -43,10 +38,13 @@ export default function TicketsContainer() {
           ))}
         </ul>
       </div>
-
-      <div style={{ width: "60%", paddingLeft: "1rem" }}>
+      <div className="tickets-detail-container">
         {ticketSeleccionado ? (
-          <TicketDetalle ticket={ticketSeleccionado} onUpdated={fetchTickets} />
+          <TicketDetail 
+            ticket={ticketSeleccionado} 
+            onUpdated={fetchTickets} 
+            onClose={() => setTicketSeleccionado(null)} 
+          />
         ) : (
           <p>Selecciona un ticket para ver el detalle.</p>
         )}

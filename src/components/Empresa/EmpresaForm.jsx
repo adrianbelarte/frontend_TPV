@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import "./EmpresaForm.css";
 
 export default function EmpresaForm({ empresaEdit, onSave, onCancel }) {
   const [nombre, setNombre] = useState("");
@@ -29,7 +30,7 @@ export default function EmpresaForm({ empresaEdit, onSave, onCancel }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="empresa-form">
       <input
         type="text"
         placeholder="Nombre"

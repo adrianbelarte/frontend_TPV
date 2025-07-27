@@ -3,6 +3,7 @@ import ProductoList from "./ProductoList";
 import ProductoForm from "./ProductoForm";
 import { AuthContext } from "../../context/AuthContext";
 import { authFetch } from "../../utils/authFetch";
+import "./ProductoContainer.css";
 
 export default function ProductoContainer() {
   const { isLoggedIn } = useContext(AuthContext);
@@ -38,7 +39,6 @@ export default function ProductoContainer() {
 
   async function fetchProductosExtras() {
     try {
-      // Puedes usar la misma lista de productos como extras
       const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/productos`);
       setProductosExtras(data);
     } catch (err) {
@@ -69,24 +69,15 @@ export default function ProductoContainer() {
     if (!window.confirm("¿Estás seguro de que quieres eliminar este producto?")) return;
 
     try {
-      const url = `${import.meta.env.VITE_BASE_URL}/api/productos/${id}`;
-      await authFetch(url, { method: "DELETE" });
+      await authFetch(`${import.meta.env.VITE_BASE_URL}/api/productos/${id}`, { method: "DELETE" });
       await fetchProductos();
     } catch (err) {
       setError(err.message);
     }
   }
 
-  function handleEdit(prod) {
-    setProductoEdit(prod);
-  }
-
-  function handleCancel() {
-    setProductoEdit(null);
-  }
-
   return (
-    <>
+    <div className="producto-container">
       <h1>Productos</h1>
 
       {error && <p style={{ color: "red" }}>Error: {error}</p>}
@@ -95,7 +86,7 @@ export default function ProductoContainer() {
         <ProductoForm
           onSave={handleSave}
           productoEdit={productoEdit}
-          onCancel={handleCancel}
+          onCancel={() => setProductoEdit(null)}
           categorias={categorias}
           productosExtras={productosExtras}
         />
@@ -103,9 +94,9 @@ export default function ProductoContainer() {
 
       <ProductoList
         productos={productos}
-        onEdit={isLoggedIn ? handleEdit : null}
+        onEdit={isLoggedIn ? setProductoEdit : null}
         onDelete={isLoggedIn ? handleDelete : null}
       />
-    </>
+    </div>
   );
 }

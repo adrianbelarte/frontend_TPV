@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import './CategoriaForm.css';
+
 
 export default function CategoriaForm({ onSave, categoriaEdit, onCancel }) {
   const [nombre, setNombre] = useState("");
@@ -28,6 +30,7 @@ export default function CategoriaForm({ onSave, categoriaEdit, onCancel }) {
   };
 
   return (
+  <div className="categoria-form">
     <form onSubmit={handleSubmit}>
       <input
         name="nombre"
@@ -44,7 +47,10 @@ export default function CategoriaForm({ onSave, categoriaEdit, onCancel }) {
         placeholder="URL de imagen"
       />
       <button type="submit">{categoriaEdit ? "Actualizar" : "Crear"}</button>
-      {categoriaEdit && <button type="button" onClick={onCancel}>Cancelar</button>}
+      {categoriaEdit && (
+        <button type="button" onClick={onCancel}>Cancelar</button>
+      )}
     </form>
-  );
+  </div>
+);
 }

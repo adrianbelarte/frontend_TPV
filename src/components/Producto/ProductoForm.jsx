@@ -1,4 +1,7 @@
-import { useState, useEffect } from "react";
+import "./ProductoForm.css";
+import React, { useState, useEffect } from "react";
+
+
 
 export default function ProductoForm({ onSave, productoEdit, onCancel, categorias, productosExtras }) {
   const [producto, setProducto] = useState({
@@ -6,12 +9,11 @@ export default function ProductoForm({ onSave, productoEdit, onCancel, categoria
     precio: "",
     imagen: "",
     categoriaId: "",
-    extras: [], // array de ids de productos extra
+    extras: [],
   });
 
   useEffect(() => {
     if (productoEdit) {
-      // para extras puede ser un array de objetos, extraemos ids
       const extrasIds = productoEdit.extras ? productoEdit.extras.map(e => e.id) : [];
       setProducto({ ...productoEdit, categoriaId: productoEdit.categoriaId || "", extras: extrasIds });
     } else {
@@ -44,38 +46,20 @@ export default function ProductoForm({ onSave, productoEdit, onCancel, categoria
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="producto-form" onSubmit={handleSubmit}>
       <label>
         Nombre:
-        <input
-          type="text"
-          name="nombre"
-          value={producto.nombre}
-          onChange={handleChange}
-          required
-        />
+        <input type="text" name="nombre" value={producto.nombre} onChange={handleChange} required />
       </label>
 
       <label>
         Precio:
-        <input
-          type="number"
-          step="0.01"
-          name="precio"
-          value={producto.precio}
-          onChange={handleChange}
-          required
-        />
+        <input type="number" step="0.01" name="precio" value={producto.precio} onChange={handleChange} required />
       </label>
 
       <label>
         Imagen URL:
-        <input
-          type="text"
-          name="imagen"
-          value={producto.imagen}
-          onChange={handleChange}
-        />
+        <input type="text" name="imagen" value={producto.imagen} onChange={handleChange} />
       </label>
 
       <label>
@@ -89,7 +73,7 @@ export default function ProductoForm({ onSave, productoEdit, onCancel, categoria
       </label>
 
       <label>
-        Productos Extras (Ctrl+click para seleccionar varios):
+        Productos Extras:
         <select multiple size={5} value={producto.extras} onChange={handleExtrasChange}>
           {productosExtras.map(prod => (
             <option key={prod.id} value={prod.id}>{prod.nombre}</option>
@@ -97,8 +81,10 @@ export default function ProductoForm({ onSave, productoEdit, onCancel, categoria
         </select>
       </label>
 
-      <button type="submit">{productoEdit ? "Actualizar" : "Crear"}</button>
-      {productoEdit && <button type="button" onClick={onCancel}>Cancelar</button>}
+      <div>
+        <button type="submit">{productoEdit ? "Actualizar" : "Crear"}</button>
+        {productoEdit && <button type="button" onClick={onCancel}>Cancelar</button>}
+      </div>
     </form>
   );
 }

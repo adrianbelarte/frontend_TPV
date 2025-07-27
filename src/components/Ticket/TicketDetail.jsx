@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { authFetch } from "../../utils/authFetch";
+import "./TicketDetail.css";
 
 export default function TicketDetail({ ticket, onClose, onUpdated }) {
   const [tipoPago, setTipoPago] = useState(ticket.tipo_pago || "");
@@ -35,7 +36,7 @@ export default function TicketDetail({ ticket, onClose, onUpdated }) {
   }
 
   return (
-    <div style={{ background: "#f9f9f9", padding: "20px" }}>
+    <div className="ticket-detail">
       <h2>Detalles del Ticket #{ticket.id}</h2>
 
       <label>

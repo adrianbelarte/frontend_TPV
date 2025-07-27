@@ -1,0 +1,46 @@
+.empresa-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 24px;
+  background-color: #fff;
+  border: 2px solid #0077cc;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 119, 204, 0.1);
+}
+
+.empresa-titulo {
+  font-size: 24px;
+  text-align: center;
+  color: #0077cc;
+  margin-bottom: 20px;
+}
+
+.empresa-detalle p {
+  font-size: 16px;
+  margin: 8px 0;
+  color: #333;
+}
+
+.empresa-detalle strong {
+  color: #000;
+}
+
+.empresa-btn {
+  margin-top: 20px;
+  padding: 10px 16px;
+  background-color: #0077cc;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.empresa-btn:hover {
+  background-color: #005fa3;
+}
+
+.empresa-error {
+  color: red;
+  text-align: center;
+}

@@ -1,0 +1,52 @@
+.producto-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.producto-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  color: #333;
+}
+
+.producto-form input,
+.producto-form select {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+.producto-form select[multiple] {
+  height: 120px;
+}
+
+.producto-form button {
+  width: fit-content;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #0077cc;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 8px;
+}
+
+.producto-form button:hover {
+  background-color: #005fa3;
+}
+
+.producto-form .cancel-btn {
+  background-color: #999;
+  margin-left: 10px;
+}
+
+.producto-form .cancel-btn:hover {
+  background-color: #777;
+}
