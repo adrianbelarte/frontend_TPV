@@ -13,6 +13,13 @@
   border-radius: 10px;
 }
 
+main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
 
 /* --- Categorías --- */
 .categorias-section {
@@ -28,6 +35,7 @@
   border: 2px solid #0077cc;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 119, 204, 0.3);
+  flex-shrink: 0;
 }
 
 .categoria-card {
@@ -52,7 +60,8 @@
 
 /* --- Cuerpo principal dividido --- */
 .main-layout {
-  flex: 1 1 auto; /* ocupa todo lo que quede */
+  flex: 1; /* ocupa todo lo que quede */
+  min-height: 0; 
   display: flex;
   gap: 5px;
   overflow: hidden;
