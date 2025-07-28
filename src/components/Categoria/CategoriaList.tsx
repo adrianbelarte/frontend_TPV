@@ -1,7 +1,19 @@
 import './CategoriaList.css';
 
+type Categoria = {
+  id: number;
+  nombre: string;
+  imagen?: string;
+};
 
-export default function CategoriaList({ categorias, onEdit, onDelete, onClick }) {
+interface Props {
+  categorias: Categoria[];
+  onEdit?: (categoria: Categoria) => void;
+  onDelete?: (id: number) => void;
+  onClick?: (categoria: Categoria) => void;
+}
+
+export default function CategoriaList({ categorias, onEdit, onDelete, onClick }: Props) {
   return (
     <div className="categoria-list">
       {categorias.map((cat) => (
@@ -32,4 +44,3 @@ export default function CategoriaList({ categorias, onEdit, onDelete, onClick })
     </div>
   );
 }
-

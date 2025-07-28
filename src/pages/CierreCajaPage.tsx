@@ -1,4 +1,4 @@
-import CerrarCaja from "../components/caja/CerrarCaja";
+import CerrarCaja from "../components/Caja/CerrarCaja";
 
 export default function CierreCajaPage() {
   return <CerrarCaja />;

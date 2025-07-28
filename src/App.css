@@ -1,13 +1,20 @@
 html, body {
   margin: 0;
   padding: 0;
-  height: 100vh;
-  overflow: hidden;
+  height: 100%;
+  /* quitar overflow hidden para permitir scroll */
 }
 
 #root {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+}
+
+main {
+  flex: 1 1 auto; /* que el main ocupe el espacio restante */
+  padding-bottom: 60px; /* espacio para el footer fijo */
+  overflow-y: auto; /* scroll si hay contenido largo */
   box-sizing: border-box;
 }

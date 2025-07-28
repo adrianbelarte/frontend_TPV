@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import './CategoriaForm.css';
+import type { CategoriaInput } from "../../types/categoria";
 
+interface Props {
+  onSave: (categoria: CategoriaInput) => Promise<void>;
+  categoriaEdit: CategoriaInput | null;
+  onCancel: () => void;
+}
 
-export default function CategoriaForm({ onSave, categoriaEdit, onCancel }) {
+export default function CategoriaForm({ onSave, categoriaEdit, onCancel }: Props) {
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [urlImagen, setUrlImagen] = useState("");
@@ -19,7 +25,7 @@ export default function CategoriaForm({ onSave, categoriaEdit, onCancel }) {
     }
   }, [categoriaEdit]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
       id: categoriaEdit?.id,
@@ -30,27 +36,27 @@ export default function CategoriaForm({ onSave, categoriaEdit, onCancel }) {
   };
 
   return (
-  <div className="categoria-form">
-    <form onSubmit={handleSubmit}>
-      <input
-        name="nombre"
-        value={nombre}
-        onChange={(e) => setNombre(e.target.value)}
-        placeholder="Nombre de categoría"
-        required
-      />
-      <input
-        type="text"
-        name="imagenUrl"
-        value={urlImagen}
-        onChange={(e) => setUrlImagen(e.target.value)}
-        placeholder="URL de imagen"
-      />
-      <button type="submit">{categoriaEdit ? "Actualizar" : "Crear"}</button>
-      {categoriaEdit && (
-        <button type="button" onClick={onCancel}>Cancelar</button>
-      )}
-    </form>
-  </div>
-);
+    <div className="categoria-form">
+      <form onSubmit={handleSubmit}>
+        <input
+          name="nombre"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          placeholder="Nombre de categoría"
+          required
+        />
+        <input
+          type="text"
+          name="imagenUrl"
+          value={urlImagen}
+          onChange={(e) => setUrlImagen(e.target.value)}
+          placeholder="URL de imagen"
+        />
+        <button type="submit">{categoriaEdit ? "Actualizar" : "Crear"}</button>
+        {categoriaEdit && (
+          <button type="button" onClick={onCancel}>Cancelar</button>
+        )}
+      </form>
+    </div>
+  );
 }

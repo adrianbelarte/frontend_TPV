@@ -1,0 +1,75 @@
+.login-form {
+  width: 280px;
+  margin: 2rem auto;
+  padding: 1rem 1rem 1.5rem;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  user-select: none;
+}
+
+.error {
+  color: #d32f2f;
+  margin-bottom: 0.8em;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.pin-display {
+  font-size: 2rem;
+  letter-spacing: 0.6em;
+  margin-bottom: 1.2em;
+  height: 2.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.keypad-button {
+  font-size: 1.6rem;
+  padding: 0.8rem 0;
+  border: none;
+  border-radius: 8px;
+  background-color: #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  touch-action: manipulation;
+}
+
+.keypad-button:active {
+  background-color: #bdbdbd;
+  transform: scale(0.95);
+}
+
+.keypad-button:hover {
+  background-color: #d5d5d5;
+}
+
+.submit-button {
+  grid-column: span 3;
+  background-color: #4caf50;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 3px 6px rgba(76, 175, 80, 0.4);
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+  padding: 0.8rem 0;
+}
+
+.submit-button:hover {
+  background-color: #45a049;
+  box-shadow: 0 4px 8px rgba(69, 160, 73, 0.6);
+}
+
+.submit-button:active {
+  transform: scale(0.95);
+  box-shadow: none;
+}

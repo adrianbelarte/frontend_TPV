@@ -1,15 +1,13 @@
-// src/components/Navbar.jsx
 import { Link } from "react-router-dom";
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
-import "./Navbar.css";
+import { useAuth } from "../context/AuthContext";
+import "./Footer.css";
 
-export default function Navbar() {
-  const { isLoggedIn, logout } = useContext(AuthContext);
+export default function Footer() {
+  const { isLoggedIn, logout } = useAuth();
 
   return (
-    <nav className="navbar">
-      <ul className="navbar-list">
+    <footer className="footer">
+      <ul className="footer-list">
         <li><Link to="/">Home</Link></li>
         <li><Link to="/categoria">Categorías</Link></li>
         <li><Link to="/empresa">Empresas</Link></li>
@@ -25,6 +23,6 @@ export default function Navbar() {
           <li><Link to="/login">Login</Link></li>
         )}
       </ul>
-    </nav>
+    </footer>
   );
 }

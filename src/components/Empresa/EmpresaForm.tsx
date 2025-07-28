@@ -1,7 +1,16 @@
 import { useState, useEffect } from "react";
-import "./EmpresaForm.css";
+import type { FormEvent } from "react";
 
-export default function EmpresaForm({ empresaEdit, onSave, onCancel }) {
+import "./EmpresaForm.css";
+import type { EmpresaInput } from "../../types/empresa";
+
+interface Props {
+  empresaEdit: EmpresaInput | null;
+  onSave: (empresa: EmpresaInput) => void;
+  onCancel: () => void;
+}
+
+export default function EmpresaForm({ empresaEdit, onSave, onCancel }: Props) {
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -24,7 +33,7 @@ export default function EmpresaForm({ empresaEdit, onSave, onCancel }) {
     }
   }, [empresaEdit]);
 
-  function handleSubmit(e) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault();
     onSave({ nombre, direccion, telefono, correo, cif });
   }

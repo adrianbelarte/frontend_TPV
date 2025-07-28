@@ -1,18 +1,27 @@
 import { useEffect, useState, useContext } from "react";
 import CategoriaList from "./CategoriaList";
 import CategoriaForm from "./CategoriaForm";
-import ProductoList from "../producto/ProductoList";
+import ProductoList from "../Producto/ProductoList";
 import { AuthContext } from "../../context/AuthContext";
 import { authFetch } from "../../utils/authFetch";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import { api } from "../../config/api";
+import type { Categoria, CategoriaInput } from "../../types/categoria";
+import type { Producto } from "../../types/producto";
+
 
 export default function CategoriaContainer() {
-  const { isLoggedIn } = useContext(AuthContext);
-  const [categorias, setCategorias] = useState([]);
-  const [productos, setProductos] = useState([]); 
-  const [error, setError] = useState(null);
-  const [categoriaEdit, setCategoriaEdit] = useState(null);
+  const authContext = useContext(AuthContext);
+  if (!authContext) {
+    return <div>Error: no hay contexto de autenticación</div>;
+  }
+  const { isLoggedIn } = authContext;
+
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  // Cambia el estado a CategoriaInput para que id sea opcional
+  const [categoriaEdit, setCategoriaEdit] = useState<CategoriaInput | null>(null);
 
   useEffect(() => {
     fetchCategorias();
@@ -20,31 +29,29 @@ export default function CategoriaContainer() {
 
   async function fetchCategorias() {
     try {
-      const data = await authFetch(api("/api/categorias"));
+      const data = (await authFetch(api("/api/categorias"))) as Categoria[];
       setCategorias(data);
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
     }
   }
 
-  async function handleCategoriaClick(cat) {
+  async function handleCategoriaClick(cat: Categoria | null) {
     try {
-      let data;
+      let data: Producto[];
       if (!cat || cat.id == null) {
-        // Productos sin categoría
-        data = await authFetch(api("/api/productos"));
-        data = data.filter(p => !p.categoriaId);
+        data = (await authFetch(api("/api/productos"))) as Producto[];
+        data = data.filter((p) => !p.categoriaId);
       } else {
-        // Productos de categoría específica
-        data = await authFetch(api(`/api/categorias/${cat.id}/productos`));
+        data = (await authFetch(api(`/api/categorias/${cat.id}/productos`))) as Producto[];
       }
       setProductos(data);
-    } catch (err) {
+    } catch (err: any) {
       setError("Error al cargar productos: " + err.message);
     }
   }
 
-  async function handleProductoClick(producto) {
+  async function handleProductoClick(producto: Producto) {
     try {
       const body = {
         fecha: new Date(),
@@ -65,20 +72,21 @@ export default function CategoriaContainer() {
       });
 
       toast.success(`Ticket creado para ${producto.nombre}`);
-    } catch (err) {
+    } catch (err: any) {
       toast.error("Error al crear ticket: " + err.message);
     }
   }
 
-  function handleEdit(cat) {
-    setCategoriaEdit(cat);
+  function handleEdit(cat: Categoria) {
+    setCategoriaEdit(cat); // cat tiene id obligatorio, asigna a estado con id opcional, es seguro
   }
 
   function handleCancel() {
     setCategoriaEdit(null);
   }
 
-  async function handleSave(categoria) {
+  // Aquí la función es async y recibe CategoriaInput (id opcional)
+  async function handleSave(categoria: CategoriaInput): Promise<void> {
     try {
       const method = categoria.id ? "PUT" : "POST";
       const url = categoria.id
@@ -91,10 +99,12 @@ export default function CategoriaContainer() {
         body: JSON.stringify(categoria),
       });
 
-      toast.success(`Categoría ${categoria.id ? 'actualizada' : 'creada'} correctamente`);
+      toast.success(
+        `Categoría ${categoria.id ? "actualizada" : "creada"} correctamente`
+      );
       setCategoriaEdit(null);
       fetchCategorias();
-    } catch (err) {
+    } catch (err: any) {
       toast.error("Error al guardar la categoría: " + err.message);
     }
   }
@@ -115,19 +125,27 @@ export default function CategoriaContainer() {
 
       <CategoriaList
         categorias={categorias}
-        onEdit={isLoggedIn ? handleEdit : null}
-        onDelete={isLoggedIn ? async (id) => {
-          if (window.confirm("¿Eliminar categoría?")) {
-            await authFetch(api(`/api/categorias/${id}`), { method: "DELETE" });
-            fetchCategorias();
-          }
-        } : null}
+        onEdit={isLoggedIn ? handleEdit : undefined}
+        onDelete={
+          isLoggedIn
+            ? async (id: number) => {
+                if (window.confirm("¿Eliminar categoría?")) {
+                  await authFetch(api(`/api/categorias/${id}`), { method: "DELETE" });
+                  fetchCategorias();
+                }
+              }
+            : undefined
+        }
         onClick={handleCategoriaClick}
       />
 
       {productos.length > 0 && (
-        <ProductoList productos={productos} onProductoClick={handleProductoClick} />
-      )}
+      <ProductoList 
+        productos={productos} 
+        categorias={categorias}    // <----- Aquí se añade
+        onProductoClick={handleProductoClick} 
+      />
+    )}
     </>
   );
 }

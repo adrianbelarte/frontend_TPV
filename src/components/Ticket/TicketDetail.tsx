@@ -1,30 +1,37 @@
 import { useState } from "react";
 import { authFetch } from "../../utils/authFetch";
-import { api } from "../../config/api";  // <-- importamos api helper
+import { api } from "../../config/api";
 import "./TicketDetail.css";
+import type { Ticket, ProductoConTicketProducto } from "../../types/ticket";
 
-export default function TicketDetail({ ticket, onClose, onUpdated }) {
-  const [tipoPago, setTipoPago] = useState(ticket.tipo_pago || "");
-  const [productos, setProductos] = useState(ticket.productos || []);
+type Props = {
+  ticket: Ticket;
+  onClose: () => void;
+  onUpdated: () => void;
+};
 
-  function handleRemoveProducto(productoId) {
-    setProductos(prev => prev.filter(p => p.TicketProducto.productoId !== productoId));
+export default function TicketDetail({ ticket, onClose, onUpdated }: Props) {
+  const [tipoPago, setTipoPago] = useState<string>(ticket.tipo_pago || "");
+  const [productos, setProductos] = useState<ProductoConTicketProducto[]>(ticket.productos || []);
+
+  function handleRemoveProducto(productoId: number) {
+    setProductos((prev) => prev.filter((p) => p.TicketProducto.productoId !== productoId));
   }
 
   async function handleSave() {
     try {
       const payload = {
         tipo_pago: tipoPago,
-        productos: productos.map(p => ({
+        productos: productos.map((p) => ({
           productoId: p.id,
           cantidad: p.TicketProducto.cantidad,
-        }))
+        })),
       };
 
-      await authFetch(api(`/api/tickets/${ticket.id}`), {  // <-- aquí usamos api()
+      await authFetch(api(`/api/tickets/${ticket.id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       alert("Ticket actualizado correctamente");
@@ -42,7 +49,7 @@ export default function TicketDetail({ ticket, onClose, onUpdated }) {
 
       <label>
         Forma de pago:
-        <select value={tipoPago} onChange={e => setTipoPago(e.target.value)}>
+        <select value={tipoPago} onChange={(e) => setTipoPago(e.target.value)}>
           <option value="">Seleccionar</option>
           <option value="efectivo">Efectivo</option>
           <option value="tarjeta">Tarjeta</option>
@@ -51,7 +58,7 @@ export default function TicketDetail({ ticket, onClose, onUpdated }) {
       </label>
 
       <ul>
-        {productos.map(producto => (
+        {productos.map((producto) => (
           <li key={producto.id}>
             {producto.nombre} — Cantidad: {producto.TicketProducto.cantidad} — Precio: {producto.precio.toFixed(2)} €
             <button onClick={() => handleRemoveProducto(producto.id)}>❌</button>

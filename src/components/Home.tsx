@@ -1,18 +1,39 @@
 import { useEffect, useState } from "react";
 import { authFetch } from "../utils/authFetch";
 import { api } from "../config/api";  // <-- Importa tu helper api()
-import "../pages/Home/HomePage.css"
+import "../pages/Home/HomePage.css";
+
+interface Categoria {
+  id: number;
+  nombre: string;
+  imagen?: string;
+}
+
+interface Producto {
+  id: number;
+  nombre: string;
+  precio: number;
+  imagen?: string;
+  categoriaId?: number | null;
+}
+
+interface VentaItem {
+  producto: Producto;
+  cantidad: number;
+}
 
 export default function HomePOS() {
-  const [categorias, setCategorias] = useState([]);
-  const [productosVisibles, setProductosVisibles] = useState([]);
-  const [venta, setVenta] = useState([]);
-  const [seleccion, setSeleccion] = useState([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [productosVisibles, setProductosVisibles] = useState<Producto[]>([]);
+  const [venta, setVenta] = useState<VentaItem[]>([]);
+  const [seleccion, setSeleccion] = useState<number[]>([]); // arreglo de productId seleccionados
 
   useEffect(() => {
     // Carga categorías y productos sin categoría al inicio
     authFetch(api("/api/categorias"))
-      .then(setCategorias);
+      .then(setCategorias)
+      .catch(err => alert("Error cargando categorías: " + err.message));
+
     fetchProductosSinCategoria();
   }, []);
 
@@ -20,15 +41,16 @@ export default function HomePOS() {
   const fetchProductosSinCategoria = async () => {
     try {
       const allProductos = await authFetch(api("/api/productos"));
-      const sinCategoria = allProductos.filter(p => !p.categoriaId);
+      // Aquí podrías forzar que allProductos sea Producto[]
+      const sinCategoria = (allProductos as Producto[]).filter(p => !p.categoriaId);
       setProductosVisibles(sinCategoria);
-    } catch (err) {
+    } catch (err: any) {
       alert("Error cargando productos sin categoría: " + err.message);
     }
   };
 
   // Función para filtrar productos según categoría o sin categoría si catId es null
-  const filtrarCategoria = async (catId) => {
+  const filtrarCategoria = async (catId: number | null) => {
     if (catId === null) {
       // Mostrar productos sin categoría
       fetchProductosSinCategoria();
@@ -37,40 +59,43 @@ export default function HomePOS() {
 
     try {
       const data = await authFetch(api(`/api/categorias/${catId}/productos`));
-      setProductosVisibles(data);
-    } catch (err) {
+      setProductosVisibles(data as Producto[]);
+    } catch (err: any) {
       alert("Error cargando productos de la categoría: " + err.message);
     }
   };
 
-  const agregarProd = (prod) => {
+  const agregarProd = (prod: Producto) => {
     setVenta(prev => {
       const ex = prev.find(i => i.producto.id === prod.id);
-      if (ex) return prev.map(i => i.producto.id === prod.id
-        ? { ...i, cantidad: i.cantidad + 1 }
-        : i);
+      if (ex)
+        return prev.map(i =>
+          i.producto.id === prod.id ? { ...i, cantidad: i.cantidad + 1 } : i
+        );
       return [...prev, { producto: prod, cantidad: 1 }];
     });
   };
 
-  const eliminarProd = prodId => {
+  const eliminarProd = (prodId: number) => {
     setVenta(prev => {
       const ex = prev.find(i => i.producto.id === prodId);
       if (!ex) return prev;
       if (ex.cantidad > 1) {
-        return prev.map(i => i.producto.id === prodId
-          ? { ...i, cantidad: i.cantidad - 1 } : i);
+        return prev.map(i =>
+          i.producto.id === prodId ? { ...i, cantidad: i.cantidad - 1 } : i
+        );
       }
       return prev.filter(i => i.producto.id !== prodId);
     });
   };
 
-  const toggleSelect = prodId => {
-    setSeleccion(prev => prev.includes(prodId)
-      ? prev.filter(id => id !== prodId) : [...prev, prodId]);
+  const toggleSelect = (prodId: number) => {
+    setSeleccion(prev =>
+      prev.includes(prodId) ? prev.filter(id => id !== prodId) : [...prev, prodId]
+    );
   };
 
-  const pagar = tipo =>
+  const pagar = (tipo: "efectivo" | "tarjeta") =>
     authFetch(api("/api/tickets"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -78,23 +103,20 @@ export default function HomePOS() {
         tipo_pago: tipo,
         fecha: new Date(),
         total: venta.reduce((s, i) => s + i.cantidad * i.producto.precio, 0),
-        productos: venta.map(i => ({ productoId: i.producto.id, cantidad: i.cantidad }))
-      })
+        productos: venta.map(i => ({ productoId: i.producto.id, cantidad: i.cantidad })),
+      }),
     })
-    .then(() => setVenta([]))
-    .catch(e => alert(e.message));
+      .then(() => setVenta([]))
+      .catch((e: Error) => alert(e.message));
 
   return (
     <div className="homepos-container">
       <div className="categorias-section">
-        {categorias.map(c =>
-          <div key={c.id} className="categoria-card"
-               onClick={() => filtrarCategoria(c.id)}>
-            {c.imagen
-              ? <img src={c.imagen} alt={c.nombre} />
-              : <span>{c.nombre}</span>}
+        {categorias.map((c) => (
+          <div key={c.id} className="categoria-card" onClick={() => filtrarCategoria(c.id)}>
+            {c.imagen ? <img src={c.imagen} alt={c.nombre} /> : <span>{c.nombre}</span>}
           </div>
-        )}
+        ))}
         <div className="categoria-card" onClick={() => filtrarCategoria(null)}>
           Sin categoría
         </div>
@@ -104,16 +126,28 @@ export default function HomePOS() {
         <div className="venta-actual">
           <h2>Venta actual</h2>
           <ul>
-            {venta.map(item => (
-              <li key={item.producto.id}
-                  className={seleccion.includes(item.producto.id) ? "seleccionado" : ""}
-                  onClick={() => toggleSelect(item.producto.id)}>
-                <span>{item.producto.nombre} x {item.cantidad} = {(item.producto.precio * item.cantidad).toFixed(2)} €</span>
-                <button onClick={e => { e.stopPropagation(); eliminarProd(item.producto.id); }}>✖️</button>
+            {venta.map((item) => (
+              <li
+                key={item.producto.id}
+                className={seleccion.includes(item.producto.id) ? "seleccionado" : ""}
+                onClick={() => toggleSelect(item.producto.id)}
+              >
+                <span>
+                  {item.producto.nombre} x {item.cantidad} ={" "}
+                  {(item.producto.precio * item.cantidad).toFixed(2)} €
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    eliminarProd(item.producto.id);
+                  }}
+                >
+                  ✖️
+                </button>
               </li>
             ))}
           </ul>
-          {venta.length > 0 &&
+          {venta.length > 0 && (
             <div className="botones-pago">
               <button onClick={() => pagar("efectivo")}>
                 <div className="icono">💶</div>
@@ -124,18 +158,15 @@ export default function HomePOS() {
                 <div className="texto">Pago con tarjeta</div>
               </button>
             </div>
-          }
+          )}
         </div>
 
         <div className="productos-visibles">
-          {productosVisibles.map(p => (
+          {productosVisibles.map((p) => (
             <div key={p.id} className="producto-card" onClick={() => agregarProd(p)}>
               <strong>{p.nombre}</strong>
               <div>{p.precio} €</div>
-              {p.imagen
-                ? <img src={p.imagen} alt={p.nombre} />
-                : <div className="placeholder">{p.nombre}</div>
-              }
+              {p.imagen ? <img src={p.imagen} alt={p.nombre} /> : <div className="placeholder">{p.nombre}</div>}
             </div>
           ))}
         </div>

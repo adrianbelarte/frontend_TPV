@@ -1,4 +1,4 @@
-import ProductoContainer from "../components/producto/ProductoContainer";
+import ProductoContainer from "../components/Producto/ProductoContainer";
 
 export default function ProductoPage() {
   return (

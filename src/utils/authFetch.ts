@@ -1,14 +1,14 @@
-export async function authFetch(url, options = {}) {
+export async function authFetch<T = any>(url: string, options: RequestInit = {}): Promise<T | null> {
   const token = localStorage.getItem("token");
 
   const isFormData = options.body instanceof FormData;
 
-  const defaultHeaders = {
+  const defaultHeaders: HeadersInit = {
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
-    ...(token && { Authorization: `Bearer ${token}` }),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
-  const config = {
+  const config: RequestInit = {
     ...options,
     headers: {
       ...defaultHeaders,
@@ -27,5 +27,5 @@ export async function authFetch(url, options = {}) {
     return null;
   }
 
-  return res.json();
+  return res.json() as Promise<T>;
 }

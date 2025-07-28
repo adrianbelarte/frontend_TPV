@@ -1,9 +1,22 @@
 import { useState } from "react";
-import { authFetch } from "../../utils/authFetch"; // Ajusta según tu estructura
+import { authFetch } from "../../utils/authFetch";
 import { api } from "../../config/api";
 
+type ResumenCaja = {
+  total_efectivo: number;
+  total_tarjeta: number;
+  total_general: number;
+};
+
+type RespuestaCerrarCaja = {
+  error?: string;
+  resumen?: ResumenCaja;
+  mensaje?: string;
+  archivo?: string;
+};
+
 export default function CerrarCaja() {
-  const [resumen, setResumen] = useState(null);
+  const [resumen, setResumen] = useState<ResumenCaja | null>(null);
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
@@ -15,18 +28,20 @@ export default function CerrarCaja() {
     setResumen(null);
 
     try {
-      const res = await authFetch(api("/api/cerrar-caja"), {
+      const res = (await authFetch(api("/api/cerrar-caja"), {
         method: "POST",
-      });
+      })) as RespuestaCerrarCaja;
 
       if (res.error) throw new Error(res.error);
 
-      setResumen(res.resumen);
-      setMensaje(res.mensaje);
+      if (res.resumen) setResumen(res.resumen);
+      if (res.mensaje) setMensaje(res.mensaje);
 
-      const urlDescarga = `${import.meta.env.VITE_BASE_URL}${res.archivo}`;
-      window.open(urlDescarga, "_blank");
-    } catch (err) {
+      if (res.archivo) {
+        const urlDescarga = `${import.meta.env.VITE_BASE_URL}${res.archivo}`;
+        window.open(urlDescarga, "_blank");
+      }
+    } catch (err: any) {
       setError(err.message || "Error al cerrar caja");
     } finally {
       setLoading(false);
@@ -45,8 +60,8 @@ export default function CerrarCaja() {
           padding: "0.7rem 1.5rem",
           border: "none",
           borderRadius: "5px",
-          cursor: "pointer",
-          marginTop: "1rem"
+          cursor: loading ? "not-allowed" : "pointer",
+          marginTop: "1rem",
         }}
       >
         {loading ? "Cerrando caja..." : "Cerrar Caja"}

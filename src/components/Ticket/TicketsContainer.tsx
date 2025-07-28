@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { authFetch } from "../../utils/authFetch";
 import TicketDetail from "./TicketDetail";
-import { api } from "../../config/api";  // <-- importamos api helper
+import { api } from "../../config/api";
 import "./TicketsContainer.css";
+import type { Ticket } from "../../types/ticket";  
 
 export default function TicketsContainer() {
-  const [tickets, setTickets] = useState([]);
-  const [ticketSeleccionado, setTicketSeleccionado] = useState(null);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [ticketSeleccionado, setTicketSeleccionado] = useState<Ticket | null>(null);
 
   useEffect(() => {
     fetchTickets();
@@ -14,7 +15,7 @@ export default function TicketsContainer() {
 
   async function fetchTickets() {
     try {
-      const data = await authFetch(api("/api/tickets"));  // <-- aquí usamos api()
+      const data = await authFetch(api("/api/tickets"));
       setTickets(data);
     } catch (err) {
       console.error("Error al cargar tickets:", err);
@@ -25,7 +26,7 @@ export default function TicketsContainer() {
     <div className="tickets-container">
       <div className="tickets-list">
         <ul>
-          {tickets.map(ticket => (
+          {tickets.map((ticket) => (
             <li
               key={ticket.id}
               onClick={() => setTicketSeleccionado(ticket)}
@@ -40,10 +41,10 @@ export default function TicketsContainer() {
       </div>
       <div className="tickets-detail-container">
         {ticketSeleccionado ? (
-          <TicketDetail 
-            ticket={ticketSeleccionado} 
-            onUpdated={fetchTickets} 
-            onClose={() => setTicketSeleccionado(null)} 
+          <TicketDetail
+            ticket={ticketSeleccionado}
+            onUpdated={fetchTickets}
+            onClose={() => setTicketSeleccionado(null)}
           />
         ) : (
           <p>Selecciona un ticket para ver el detalle.</p>
