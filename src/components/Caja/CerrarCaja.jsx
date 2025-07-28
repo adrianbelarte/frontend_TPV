@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { authFetch } from "../../utils/authFetch"; // Ajusta según tu estructura
+import { api } from "../../config/api";
 
 export default function CerrarCaja() {
   const [resumen, setResumen] = useState(null);
@@ -14,7 +15,7 @@ export default function CerrarCaja() {
     setResumen(null);
 
     try {
-      const res = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/cerrar-caja`, {
+      const res = await authFetch(api("/api/cerrar-caja"), {
         method: "POST",
       });
 

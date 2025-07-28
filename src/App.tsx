@@ -16,6 +16,9 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
+
+  const urlApi = import.meta.env.VITE_APP_API_URL
+  
   return (
     <AuthProvider>
       <BrowserRouter>

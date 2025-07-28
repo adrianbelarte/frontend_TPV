@@ -3,6 +3,7 @@ import ProductoList from "./ProductoList";
 import ProductoForm from "./ProductoForm";
 import { AuthContext } from "../../context/AuthContext";
 import { authFetch } from "../../utils/authFetch";
+import { api } from "../../config/api"; // 💡 Importa el helper centralizado
 import "./ProductoContainer.css";
 
 export default function ProductoContainer() {
@@ -21,7 +22,7 @@ export default function ProductoContainer() {
 
   async function fetchProductos() {
     try {
-      const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/productos`);
+      const data = await authFetch(api("/api/productos"));
       setProductos(data);
     } catch (err) {
       setError(err.message);
@@ -30,7 +31,7 @@ export default function ProductoContainer() {
 
   async function fetchCategorias() {
     try {
-      const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias`);
+      const data = await authFetch(api("/api/categorias"));
       setCategorias(data);
     } catch (err) {
       setError(err.message);
@@ -39,7 +40,7 @@ export default function ProductoContainer() {
 
   async function fetchProductosExtras() {
     try {
-      const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/productos`);
+      const data = await authFetch(api("/api/productos"));
       setProductosExtras(data);
     } catch (err) {
       setError(err.message);
@@ -50,8 +51,8 @@ export default function ProductoContainer() {
     try {
       const method = producto.id ? "PUT" : "POST";
       const url = producto.id
-        ? `${import.meta.env.VITE_BASE_URL}/api/productos/${producto.id}`
-        : `${import.meta.env.VITE_BASE_URL}/api/productos`;
+        ? api(`/api/productos/${producto.id}`)
+        : api("/api/productos");
 
       await authFetch(url, {
         method,
@@ -69,7 +70,7 @@ export default function ProductoContainer() {
     if (!window.confirm("¿Estás seguro de que quieres eliminar este producto?")) return;
 
     try {
-      await authFetch(`${import.meta.env.VITE_BASE_URL}/api/productos/${id}`, { method: "DELETE" });
+      await authFetch(api(`/api/productos/${id}`), { method: "DELETE" });
       await fetchProductos();
     } catch (err) {
       setError(err.message);

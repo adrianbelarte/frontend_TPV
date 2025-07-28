@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { authFetch } from "../utils/authFetch";
+import { api } from "../config/api";  // <-- Importa tu helper api()
 import "../pages/Home/HomePage.css"
 
 export default function HomePOS() {
@@ -10,7 +11,7 @@ export default function HomePOS() {
 
   useEffect(() => {
     // Carga categorías y productos sin categoría al inicio
-    authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias`)
+    authFetch(api("/api/categorias"))
       .then(setCategorias);
     fetchProductosSinCategoria();
   }, []);
@@ -18,7 +19,7 @@ export default function HomePOS() {
   // Función para cargar productos sin categoría
   const fetchProductosSinCategoria = async () => {
     try {
-      const allProductos = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/productos`);
+      const allProductos = await authFetch(api("/api/productos"));
       const sinCategoria = allProductos.filter(p => !p.categoriaId);
       setProductosVisibles(sinCategoria);
     } catch (err) {
@@ -35,14 +36,12 @@ export default function HomePOS() {
     }
 
     try {
-      const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias/${catId}/productos`);
+      const data = await authFetch(api(`/api/categorias/${catId}/productos`));
       setProductosVisibles(data);
     } catch (err) {
       alert("Error cargando productos de la categoría: " + err.message);
     }
   };
-
-  // ... resto del código queda igual
 
   const agregarProd = (prod) => {
     setVenta(prev => {
@@ -72,7 +71,7 @@ export default function HomePOS() {
   };
 
   const pagar = tipo =>
-    authFetch(`${import.meta.env.VITE_BASE_URL}/api/tickets`, {
+    authFetch(api("/api/tickets"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

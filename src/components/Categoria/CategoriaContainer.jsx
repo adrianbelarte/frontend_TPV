@@ -5,6 +5,7 @@ import ProductoList from "../producto/ProductoList";
 import { AuthContext } from "../../context/AuthContext";
 import { authFetch } from "../../utils/authFetch";
 import { toast } from 'react-toastify';
+import { api } from "../../config/api";
 
 export default function CategoriaContainer() {
   const { isLoggedIn } = useContext(AuthContext);
@@ -19,7 +20,7 @@ export default function CategoriaContainer() {
 
   async function fetchCategorias() {
     try {
-      const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias`);
+      const data = await authFetch(api("/api/categorias"));
       setCategorias(data);
     } catch (err) {
       setError(err.message);
@@ -31,11 +32,11 @@ export default function CategoriaContainer() {
       let data;
       if (!cat || cat.id == null) {
         // Productos sin categoría
-        data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/productos`);
+        data = await authFetch(api("/api/productos"));
         data = data.filter(p => !p.categoriaId);
       } else {
         // Productos de categoría específica
-        data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias/${cat.id}/productos`);
+        data = await authFetch(api(`/api/categorias/${cat.id}/productos`));
       }
       setProductos(data);
     } catch (err) {
@@ -57,7 +58,7 @@ export default function CategoriaContainer() {
         ],
       };
 
-      await authFetch(`${import.meta.env.VITE_BASE_URL}/api/tickets`, {
+      await authFetch(api("/api/tickets"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -81,8 +82,8 @@ export default function CategoriaContainer() {
     try {
       const method = categoria.id ? "PUT" : "POST";
       const url = categoria.id
-        ? `${import.meta.env.VITE_BASE_URL}/api/categorias/${categoria.id}`
-        : `${import.meta.env.VITE_BASE_URL}/api/categorias`;
+        ? api(`/api/categorias/${categoria.id}`)
+        : api("/api/categorias");
 
       await authFetch(url, {
         method,
@@ -92,7 +93,7 @@ export default function CategoriaContainer() {
 
       toast.success(`Categoría ${categoria.id ? 'actualizada' : 'creada'} correctamente`);
       setCategoriaEdit(null);
-      fetchCategorias(); // recarga la lista
+      fetchCategorias();
     } catch (err) {
       toast.error("Error al guardar la categoría: " + err.message);
     }
@@ -117,11 +118,11 @@ export default function CategoriaContainer() {
         onEdit={isLoggedIn ? handleEdit : null}
         onDelete={isLoggedIn ? async (id) => {
           if (window.confirm("¿Eliminar categoría?")) {
-            await authFetch(`${import.meta.env.VITE_BASE_URL}/api/categorias/${id}`, { method: "DELETE" });
+            await authFetch(api(`/api/categorias/${id}`), { method: "DELETE" });
             fetchCategorias();
           }
         } : null}
-        onClick={handleCategoriaClick} // 👈 aquí incluimos el manejador
+        onClick={handleCategoriaClick}
       />
 
       {productos.length > 0 && (

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { authFetch } from "../../utils/authFetch";
+import { api } from "../../config/api";  // <-- importamos api helper
 import "./TicketDetail.css";
 
 export default function TicketDetail({ ticket, onClose, onUpdated }) {
@@ -20,7 +21,7 @@ export default function TicketDetail({ ticket, onClose, onUpdated }) {
         }))
       };
 
-      await authFetch(`${import.meta.env.VITE_BASE_URL}/api/tickets/${ticket.id}`, {
+      await authFetch(api(`/api/tickets/${ticket.id}`), {  // <-- aquí usamos api()
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

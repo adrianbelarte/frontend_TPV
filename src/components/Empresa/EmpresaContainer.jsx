@@ -3,6 +3,7 @@ import EmpresaForm from "./EmpresaForm";
 import { AuthContext } from "../../context/AuthContext";
 import { authFetch } from "../../utils/authFetch";
 import { toast } from "react-toastify";
+import { api } from "../../config/api"; // Importa tu helper api
 import "./EmpresaContainer.css";
 
 export default function EmpresaContainer() {
@@ -17,7 +18,7 @@ export default function EmpresaContainer() {
 
   async function fetchEmpresa() {
     try {
-      const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/empresa`);
+      const data = await authFetch(api("/api/empresa"));
       if (data && Object.keys(data).length === 0) {
         setEmpresa(null);
         setEditMode(true); // Modo creación
@@ -34,7 +35,7 @@ export default function EmpresaContainer() {
   async function handleSave(empresaData) {
     try {
       const method = empresa ? "PUT" : "POST";
-      await authFetch(`${import.meta.env.VITE_BASE_URL}/api/empresa`, {
+      await authFetch(api("/api/empresa"), {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(empresaData),

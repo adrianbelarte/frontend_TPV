@@ -1,7 +1,7 @@
-// src/components/Ticket/TicketsContainer.jsx
 import { useEffect, useState } from "react";
 import { authFetch } from "../../utils/authFetch";
 import TicketDetail from "./TicketDetail";
+import { api } from "../../config/api";  // <-- importamos api helper
 import "./TicketsContainer.css";
 
 export default function TicketsContainer() {
@@ -14,7 +14,7 @@ export default function TicketsContainer() {
 
   async function fetchTickets() {
     try {
-      const data = await authFetch(`${import.meta.env.VITE_BASE_URL}/api/tickets`);
+      const data = await authFetch(api("/api/tickets"));  // <-- aquí usamos api()
       setTickets(data);
     } catch (err) {
       console.error("Error al cargar tickets:", err);
