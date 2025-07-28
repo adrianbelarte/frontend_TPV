@@ -1,20 +1,42 @@
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  /* quitar overflow hidden para permitir scroll */
-}
-
 #root {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+  width: 1024px;        /* ancho escalado */
+  height: 788px;        /* alto escalado */
+  margin: 0 auto;
+  border: 2px solid #0077cc;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-main {
-  flex: 1 1 auto; /* que el main ocupe el espacio restante */
-  padding-bottom: 60px; /* espacio para el footer fijo */
-  overflow-y: auto; /* scroll si hay contenido largo */
-  box-sizing: border-box;
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 1024px;
+  margin: 0 auto;
+  border: 2px solid #0077cc;
+  border-radius: 10px;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+/* Main ocupa todo el espacio disponible, dejando espacio al footer */
+.app-container main {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+/* Footer fijo abajo */
+footer {
+  height: 50px;
+  background-color: #0077cc;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  flex-shrink: 0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
 }

@@ -41,7 +41,6 @@ export default function HomePOS() {
   const fetchProductosSinCategoria = async () => {
     try {
       const allProductos = await authFetch(api("/api/productos"));
-      // Aquí podrías forzar que allProductos sea Producto[]
       const sinCategoria = (allProductos as Producto[]).filter(p => !p.categoriaId);
       setProductosVisibles(sinCategoria);
     } catch (err: any) {
@@ -52,7 +51,6 @@ export default function HomePOS() {
   // Función para filtrar productos según categoría o sin categoría si catId es null
   const filtrarCategoria = async (catId: number | null) => {
     if (catId === null) {
-      // Mostrar productos sin categoría
       fetchProductosSinCategoria();
       return;
     }
@@ -110,67 +108,77 @@ export default function HomePOS() {
       .catch((e: Error) => alert(e.message));
 
   return (
-    <div className="homepos-container">
-      <div className="categorias-section">
-        {categorias.map((c) => (
-          <div key={c.id} className="categoria-card" onClick={() => filtrarCategoria(c.id)}>
-            {c.imagen ? <img src={c.imagen} alt={c.nombre} /> : <span>{c.nombre}</span>}
-          </div>
-        ))}
-        <div className="categoria-card" onClick={() => filtrarCategoria(null)}>
-          Sin categoría
-        </div>
-      </div>
-
-      <div className="main-layout">
-        <div className="venta-actual">
-          <h2>Venta actual</h2>
-          <ul>
-            {venta.map((item) => (
-              <li
-                key={item.producto.id}
-                className={seleccion.includes(item.producto.id) ? "seleccionado" : ""}
-                onClick={() => toggleSelect(item.producto.id)}
-              >
-                <span>
-                  {item.producto.nombre} x {item.cantidad} ={" "}
-                  {(item.producto.precio * item.cantidad).toFixed(2)} €
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    eliminarProd(item.producto.id);
-                  }}
-                >
-                  ✖️
-                </button>
-              </li>
-            ))}
-          </ul>
-          {venta.length > 0 && (
-            <div className="botones-pago">
-              <button onClick={() => pagar("efectivo")}>
-                <div className="icono">💶</div>
-                <div className="texto">Pago en efectivo</div>
-              </button>
-              <button onClick={() => pagar("tarjeta")}>
-                <div className="icono">💳</div>
-                <div className="texto">Pago con tarjeta</div>
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="productos-visibles">
-          {productosVisibles.map((p) => (
-            <div key={p.id} className="producto-card" onClick={() => agregarProd(p)}>
-              <strong>{p.nombre}</strong>
-              <div>{p.precio} €</div>
-              {p.imagen ? <img src={p.imagen} alt={p.nombre} /> : <div className="placeholder">{p.nombre}</div>}
+    <>
+      <div
+        className="homepos-container"
+        style={{ paddingBottom: "50px" }} // espacio para footer fijo
+      >
+        {/* El navbar fue eliminado aquí */}
+        <div className="categorias-section">
+          {categorias.map((c) => (
+            <div key={c.id} className="categoria-card" onClick={() => filtrarCategoria(c.id)}>
+              {c.imagen ? <img src={c.imagen} alt={c.nombre} /> : <span>{c.nombre}</span>}
             </div>
           ))}
+          <div className="categoria-card" onClick={() => filtrarCategoria(null)}>
+            Sin categoría
+          </div>
+        </div>
+
+        <div className="main-layout">
+          <div className="venta-actual">
+            <h2>Venta actual</h2>
+            <ul>
+              {venta.map((item) => (
+                <li
+                  key={item.producto.id}
+                  className={seleccion.includes(item.producto.id) ? "seleccionado" : ""}
+                  onClick={() => toggleSelect(item.producto.id)}
+                >
+                  <span>
+                    {item.producto.nombre} x {item.cantidad} ={" "}
+                    {(item.producto.precio * item.cantidad).toFixed(2)} €
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      eliminarProd(item.producto.id);
+                    }}
+                  >
+                    ✖️
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {venta.length > 0 && (
+              <div className="botones-pago">
+                <button onClick={() => pagar("efectivo")}>
+                  <div className="icono">💶</div>
+                  <div className="texto">Pago en efectivo</div>
+                </button>
+                <button onClick={() => pagar("tarjeta")}>
+                  <div className="icono">💳</div>
+                  <div className="texto">Pago con tarjeta</div>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="productos-visibles">
+            {productosVisibles.map((p) => (
+              <div key={p.id} className="producto-card" onClick={() => agregarProd(p)}>
+                <strong>{p.nombre}</strong>
+                <div>{p.precio} €</div>
+                {p.imagen ? (
+                  <img src={p.imagen} alt={p.nombre} />
+                ) : (
+                  <div className="placeholder">{p.nombre}</div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

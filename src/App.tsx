@@ -20,8 +20,8 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Footer />
         <ToastContainer />
+        <div className="app-container">
         <main>
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -78,6 +78,8 @@ export default function App() {
             />
           </Routes>
         </main>
+        <Footer />
+        </div>
       </BrowserRouter>
     </AuthProvider>
   );
