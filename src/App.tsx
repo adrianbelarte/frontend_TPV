@@ -1,16 +1,16 @@
 // App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext.jsx";
-import PrivateRoute from "./components/PrivateRoute.jsx";
+import { AuthProvider } from "./context/AuthContext";
+import PrivateRoute from "./components/PrivateRoute";
 
-import Navbar from "./components/Navbar.jsx";
-import HomePage from "./pages/Home/HomePage.jsx";
-import LoginPage from "./pages/LoginPage.jsx";
-import CategoriaPage from "./pages/CategoriaPage.jsx";
-import EmpresaPage from "./pages/EmpresaPage.jsx";
-import ProductoPage from "./pages/ProductoPage.jsx";
-import TicketPage from "./pages/TicketPage.jsx";
-import CierreCajaPage from "./pages/CierreCajaPage.jsx";
+import Navbar from "./components/Navbar";
+import HomePage from "./pages/Home/HomePage";
+import LoginPage from "./pages/LoginPage";
+import CategoriaPage from "./pages/CategoriaPage";
+import EmpresaPage from "./pages/EmpresaPage";
+import ProductoPage from "./pages/ProductoPage";
+import TicketPage from "./pages/TicketPage";
+import CierreCajaPage from "./pages/CierreCajaPage";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
