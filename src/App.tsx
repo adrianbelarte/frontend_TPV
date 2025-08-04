@@ -2,19 +2,19 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute from "./components/PrivateRoute";
 
-import Footer from "./components/Footer"; // renombrado para mayor claridad
-import HomePage from "./pages/Home/HomePage";
+import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import CategoriaPage from "./pages/CategoriaPage";
 import EmpresaPage from "./pages/EmpresaPage";
 import ProductoPage from "./pages/ProductoPage";
 import TicketPage from "./pages/TicketPage";
 import CierreCajaPage from "./pages/CierreCajaPage";
-
+import Footer from "./components/Footer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AdminPage from "./pages/AdminPage";
 
-import "./App.css"; // importa aquí los estilos globales, incluyendo main
+import "./App.css"; 
 
 export default function App() {
   return (
@@ -66,6 +66,14 @@ export default function App() {
                 </PrivateRoute>
               }
             />
+            <Route
+  path="/admin"
+  element={
+    <PrivateRoute>
+      <AdminPage />
+    </PrivateRoute>
+  }
+/>
 
             {/* Ruta protegida de ejemplo para edición */}
             <Route

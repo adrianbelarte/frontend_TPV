@@ -137,14 +137,14 @@ export default function ProductoForm({
         </select>
       </label>
 
-      <div>
-        <button type="submit">{productoEdit ? "Actualizar" : "Crear"}</button>
-        {productoEdit && (
-          <button type="button" onClick={onCancel}>
-            Cancelar
-          </button>
-        )}
-      </div>
+      <div className="button-group">
+  <button type="submit">{productoEdit ? "Actualizar" : "Crear"}</button>
+  {productoEdit && (
+    <button type="button" className="cancel-btn" onClick={onCancel}>
+      Cancelar
+    </button>
+  )}
+</div>
     </form>
   );
 }

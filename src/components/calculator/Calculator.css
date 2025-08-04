@@ -1,0 +1,22 @@
+.calc-keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.calc-keypad button {
+  padding: 14px 0;
+  font-size: 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  user-select: none;
+}
+
+.calc-keypad button:hover {
+  background-color: #e0f7fa;
+  box-shadow: 0 4px 8px rgb(0 0 0 / 0.15);
+}

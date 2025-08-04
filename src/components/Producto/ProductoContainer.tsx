@@ -88,40 +88,46 @@ export default function ProductoContainer() {
   }
 
   return (
-    <div className="producto-container">
+  <div className="producto-container">
     <h1>Productos</h1>
 
     {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
-    {isLoggedIn && (
-      <ProductoForm
-        onSave={handleSave}
-        productoEdit={productoEdit}
-        onCancel={() => setProductoEdit(null)}
-        categorias={categorias}
-        productosExtras={productosExtras}
-      />
-    )}
+    <div className="producto-panel">
+      {isLoggedIn && (
+        <div className="producto-form-wrapper">
+          <ProductoForm
+            onSave={handleSave}
+            productoEdit={productoEdit}
+            onCancel={() => setProductoEdit(null)}
+            categorias={categorias}
+            productosExtras={productosExtras}
+          />
+        </div>
+      )}
 
-    {/* Aquí va el ProductoList con las props corregidas */}
-    <ProductoList
-      productos={productos}
-      categorias={categorias} // <-- Pasamos las categorías aquí
-      onEdit={
-        isLoggedIn
-          ? (producto) =>
-              setProductoEdit({
-                id: producto.id,
-                nombre: producto.nombre,
-                precio: producto.precio,
-                categoriaId: producto.categoriaId,
-                imagen: producto.imagen,
-                extras: producto.extras?.map((e: any) => e.id) ?? [],
-              })
-          : undefined
-      }
-      onDelete={isLoggedIn ? handleDelete : undefined}
-    />
+      <div className="producto-list-wrapper">
+        <ProductoList
+          productos={productos}
+          categorias={categorias}
+          onEdit={
+            isLoggedIn
+              ? (producto) =>
+                  setProductoEdit({
+                    id: producto.id,
+                    nombre: producto.nombre,
+                    precio: producto.precio,
+                    categoriaId: producto.categoriaId,
+                    imagen: producto.imagen,
+                    extras: producto.extras?.map((e: any) => e.id) ?? [],
+                  })
+              : undefined
+          }
+          onDelete={isLoggedIn ? handleDelete : undefined}
+        />
+      </div>
+    </div>
   </div>
 );
+
 }

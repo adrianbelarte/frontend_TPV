@@ -5,7 +5,7 @@ export interface Producto {
   precio: number;
 }
 
-export interface ItemVenta {
+export interface VentaItem {
   producto: Producto;
   cantidad: number;
 }

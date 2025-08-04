@@ -1,8 +1,8 @@
 import type { FC } from "react";
-import type { ItemVenta, MetodoPago } from "../types/venta";
+import type { VentaItem, MetodoPago } from "../types/venta";
 
 interface VentaProps {
-  venta: ItemVenta[];
+  venta: VentaItem[];
   onPagar: (metodo: MetodoPago) => void;
   onEliminarProducto: (productoId: number) => void;
 }

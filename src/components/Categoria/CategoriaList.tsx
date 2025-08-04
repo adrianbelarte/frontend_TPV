@@ -15,9 +15,9 @@ interface Props {
 
 export default function CategoriaList({ categorias, onEdit, onDelete, onClick }: Props) {
   return (
-    <div className="categoria-list">
+    <ul className="categoria-list">
       {categorias.map((cat) => (
-        <div
+        <li
           key={cat.id}
           className="categoria-item"
           onClick={() => onClick?.(cat)}
@@ -28,19 +28,33 @@ export default function CategoriaList({ categorias, onEdit, onDelete, onClick }:
               alt={cat.nombre}
             />
           )}
-          <strong>{cat.nombre}</strong>
-          {onEdit && (
-            <button onClick={(e) => { e.stopPropagation(); onEdit(cat); }}>
-              Editar
-            </button>
-          )}
-          {onDelete && (
-            <button onClick={(e) => { e.stopPropagation(); onDelete(cat.id); }}>
-              Eliminar
-            </button>
-          )}
-        </div>
+          <div className="categoria-info">
+            <strong>{cat.nombre}</strong>
+          </div>
+          <div className="categoria-actions">
+            {onEdit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(cat);
+                }}
+              >
+                Editar
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(cat.id);
+                }}
+              >
+                Eliminar
+              </button>
+            )}
+          </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

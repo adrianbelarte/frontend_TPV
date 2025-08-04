@@ -3,36 +3,42 @@ import './CategoriaForm.css';
 import type { CategoriaInput } from "../../types/categoria";
 
 interface Props {
-  onSave: (categoria: CategoriaInput) => Promise<void>;
+  onSave: (formData: FormData) => Promise<void>;
   categoriaEdit: CategoriaInput | null;
   onCancel: () => void;
 }
 
 export default function CategoriaForm({ onSave, categoriaEdit, onCancel }: Props) {
   const [nombre, setNombre] = useState("");
-  const [descripcion, setDescripcion] = useState("");
   const [urlImagen, setUrlImagen] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (categoriaEdit) {
       setNombre(categoriaEdit.nombre || "");
-      setDescripcion(categoriaEdit.descripcion || "");
       setUrlImagen(categoriaEdit.imagen || "");
+      setFile(null); // limpiar archivo al editar
     } else {
       setNombre("");
-      setDescripcion("");
       setUrlImagen("");
+      setFile(null);
     }
   }, [categoriaEdit]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      id: categoriaEdit?.id,
-      nombre,
-      descripcion,
-      imagen: urlImagen.trim(),
-    });
+
+    const formData = new FormData();
+    if (categoriaEdit?.id) formData.append("id", String(categoriaEdit.id));
+    formData.append("nombre", nombre);
+    
+    if (file) {
+      formData.append("imagen", file);
+    } else if (urlImagen.trim()) {
+      formData.append("imagen", urlImagen.trim());
+    }
+
+    await onSave(formData);
   };
 
   return (
@@ -45,13 +51,29 @@ export default function CategoriaForm({ onSave, categoriaEdit, onCancel }: Props
           placeholder="Nombre de categoría"
           required
         />
+
         <input
           type="text"
           name="imagenUrl"
           value={urlImagen}
           onChange={(e) => setUrlImagen(e.target.value)}
-          placeholder="URL de imagen"
+          placeholder="URL de imagen (opcional)"
         />
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+        />
+
+        {urlImagen && !file && (
+          <img
+            src={urlImagen}
+            alt="Vista previa"
+            style={{ maxWidth: "200px", marginTop: "10px" }}
+          />
+        )}
+
         <button type="submit">{categoriaEdit ? "Actualizar" : "Crear"}</button>
         {categoriaEdit && (
           <button type="button" onClick={onCancel}>Cancelar</button>

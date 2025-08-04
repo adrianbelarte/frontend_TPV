@@ -1,18 +1,23 @@
 import { useContext } from "react";
 import type { FC } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Login from "../components/login/Login";
 
 const LoginPage: FC = () => {
-  // Como AuthContext puede ser null, mejor hacer chequeo
   const auth = useContext(AuthContext);
-  if (!auth) return null; // o mostrar un loading/error
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  if (!auth) return null;
 
   const { login } = auth;
 
+  const from = (location.state as any)?.from?.pathname || "/";
+
   function handleLoginSuccess(token: string) {
     login(token);
-    alert("¡Login exitoso!");
+    navigate(from, { replace: true }); // redirige sin dejar /login en el historial
   }
 
   return <Login onLoginSuccess={handleLoginSuccess} />;

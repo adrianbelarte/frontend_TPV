@@ -1,75 +1,85 @@
 .login-form {
-  width: 280px;
-  margin: 2rem auto;
-  padding: 1rem 1rem 1.5rem;
+  width: 335px;
+  margin: 3rem auto;
+  padding: 2rem;
   text-align: center;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  background-color: #263238;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  color: #eceff1;
   user-select: none;
+  border: 1px solid #37474f;
+}
+
+.login-form h2 {
+  margin-bottom: 1.2rem;
+  font-size: 1.4rem;
+  color: #ffffff;
 }
 
 .error {
-  color: #d32f2f;
-  margin-bottom: 0.8em;
+  color: #ef5350;
+  margin-bottom: 1rem;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .pin-display {
   font-size: 2rem;
-  letter-spacing: 0.6em;
-  margin-bottom: 1.2em;
-  height: 2.5rem;
-  font-weight: 600;
-  color: #333;
+  letter-spacing: 0.5em;
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #37474f;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
 }
 
 .keypad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 
 .keypad-button {
   font-size: 1.6rem;
-  padding: 0.8rem 0;
+  padding: 0.9rem 0;
   border: none;
-  border-radius: 8px;
-  background-color: #e0e0e0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  background-color: #546e7a;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  user-select: none;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-  touch-action: manipulation;
-}
-
-.keypad-button:active {
-  background-color: #bdbdbd;
-  transform: scale(0.95);
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .keypad-button:hover {
-  background-color: #d5d5d5;
+  background-color: #607d8b;
+}
+
+.keypad-button:active {
+  background-color: #455a64;
+  transform: scale(0.95);
 }
 
 .submit-button {
   grid-column: span 3;
-  background-color: #4caf50;
-  color: white;
-  font-weight: 700;
-  box-shadow: 0 3px 6px rgba(76, 175, 80, 0.4);
+  background-color: #26a69a;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 1rem 0;
+  box-shadow: 0 4px 10px rgba(38, 166, 154, 0.4);
   transition: background-color 0.25s ease, box-shadow 0.25s ease;
-  padding: 0.8rem 0;
 }
 
 .submit-button:hover {
-  background-color: #45a049;
-  box-shadow: 0 4px 8px rgba(69, 160, 73, 0.6);
+  background-color: #1de9b6;
+  box-shadow: 0 4px 12px rgba(29, 233, 182, 0.6);
 }
 
 .submit-button:active {
-  transform: scale(0.95);
+  transform: scale(0.97);
   box-shadow: none;
 }

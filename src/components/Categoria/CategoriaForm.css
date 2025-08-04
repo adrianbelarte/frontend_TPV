@@ -1,18 +1,18 @@
 .categoria-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   background: #f5faff;
   border: 2px solid #0077cc;
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  max-width: 400px;
-  box-shadow: 0 2px 8px rgba(0, 119, 204, 0.1);
+  padding: 24px;
+  width: 320px;
+  height: fit-content;
+  box-shadow: 0 4px 12px rgba(0, 119, 204, 0.1);
 }
 
 .categoria-form input {
-  padding: 10px 12px;
+  padding: 10px 14px;
   border: 1.5px solid #0077cc;
   border-radius: 8px;
   font-size: 15px;
@@ -30,7 +30,6 @@
   color: white;
   border: none;
   padding: 10px;
-  margin: 5px;
   font-size: 15px;
   border-radius: 8px;
   cursor: pointer;

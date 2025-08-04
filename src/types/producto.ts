@@ -5,7 +5,7 @@ export type ProductoEdit = {
   precio: number;
   imagen?: string;
   categoriaId?: number;
-  extras?: { id: number }[]; // puede ser más detallado si lo necesitas
+  extras?: { id: number }[];
 };
 
 export type ProductoExtra = {
@@ -21,7 +21,7 @@ export type Producto = {
   nombre: string;
   precio: number;
   categoriaId?: number;
-  imagen?: string;  // <-- aquí la agregas
+  imagen?: string;  
   extras?: any[];
 };
 
