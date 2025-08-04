@@ -123,7 +123,6 @@ const filtrarCategoria = async (catId: string | number | null) => {
       <div className="panel-venta">
         <VentaPanel venta={venta} eliminarProd={eliminarProd} />
         <Totales input={input} totalVenta={totalVenta} pagar={pagar} />
-        <Calculator value={input} onChange={setInput} />
       </div>
 
       <div className="productos">
@@ -133,3 +132,5 @@ const filtrarCategoria = async (catId: string | number | null) => {
     </div>
   );
 }
+
+// <Calculator value={input} onChange={setInput} />

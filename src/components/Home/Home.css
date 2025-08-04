@@ -266,3 +266,56 @@
   font-size: 1.1rem;
   user-select: text;
 }
+
+.producto {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #ddd;
+  background-color: #fff;
+  border-radius: 6px;
+  gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.producto:hover {
+  background-color: #f1f9ff;
+}
+
+.producto .info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.producto .nombre {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.producto .precio {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.producto .cantidad {
+  min-width: 40px;
+  text-align: center;
+  font-weight: 700;
+  color: #444;
+}
+
+.producto .acciones {
+  margin-left: 8px;
+}
+

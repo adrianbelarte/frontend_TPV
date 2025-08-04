@@ -1,4 +1,3 @@
-// VentaPanel.tsx
 import { FaTimes } from "react-icons/fa";
 import type { VentaItem } from "../../types/venta";
 
@@ -13,15 +12,24 @@ export default function VentaPanel({ venta, eliminarProd }: VentaPanelProps) {
       {venta.length === 0 && <div>No hay productos en la venta</div>}
       {venta.map((item) => (
         <div key={item.producto.id} className="producto">
-          {item.producto.nombre} x {item.cantidad}
-          <span>{(item.producto.precio * item.cantidad).toFixed(2)}€</span>
-          <button
-            onClick={() => eliminarProd(item.producto.id)}
-            className="btn-eliminar"
-            title="Eliminar producto"
-          >
-            <FaTimes />
-          </button>
+          <div className="info">
+            <div className="nombre">{item.producto.nombre}</div>
+            <div className="precio">
+              {(item.producto.precio * item.cantidad).toFixed(2)}€
+            </div>
+          </div>
+
+          <div className="cantidad">x{item.cantidad}</div>
+
+          <div className="acciones">
+            <button
+              onClick={() => eliminarProd(item.producto.id)}
+              className="btn-eliminar"
+              title="Eliminar producto"
+            >
+              <FaTimes />
+            </button>
+          </div>
         </div>
       ))}
     </div>
