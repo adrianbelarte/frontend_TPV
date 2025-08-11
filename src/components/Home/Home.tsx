@@ -6,8 +6,6 @@ import VentaPanel from "./VentaPanel";
 import Totales from "./Totales";
 import CategoriaSelector from "./CategoriaSelector";
 import ProductoGrid from "./ProductoGrid";
-// Incorrecto (nombre en minúscula)
-import Calculator from "../../components/calculator/Calculator";
 import type { Producto } from "../../types/producto"; 
 import type { Categoria } from "../../types/categoria";
 import type { VentaItem } from "../../types/venta";  

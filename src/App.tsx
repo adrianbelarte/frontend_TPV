@@ -8,7 +8,7 @@ import CategoriaPage from "./pages/CategoriaPage";
 import EmpresaPage from "./pages/EmpresaPage";
 import ProductoPage from "./pages/ProductoPage";
 import TicketPage from "./pages/TicketPage";
-import CierreCajaPage from "./pages/CierreCajaPage";
+
 import Footer from "./components/Footer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -55,14 +55,6 @@ export default function App() {
               element={
                 <PrivateRoute>
                   <TicketPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/cierre-caja"
-              element={
-                <PrivateRoute>
-                  <CierreCajaPage />
                 </PrivateRoute>
               }
             />
