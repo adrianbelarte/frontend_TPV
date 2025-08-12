@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent } from "react";
-import { imprimirTicket } from "../utils/imprimir";
+import { imprimirTicket } from "../utils/imprimirTicket";
 
 type Ticket = {
   // Define aquí los campos que usas del ticket

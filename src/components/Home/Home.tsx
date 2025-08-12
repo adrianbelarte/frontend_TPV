@@ -88,42 +88,57 @@ export default function Home() {
     });
   };
 
-  const pagar = async (tipo: "efectivo" | "tarjeta") => {
-    try {
-      const fecha = new Date().toLocaleString();
-      const total = venta.reduce((s, i) => s + i.cantidad * i.producto.precio, 0);
+const pagar = async (tipo: "efectivo" | "tarjeta") => {
+  try {
+    const fecha = new Date().toLocaleString();
+    const total = venta.reduce((s, i) => s + i.cantidad * i.producto.precio, 0);
 
-      await authFetch(api("/api/tickets"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo_pago: tipo,
-          fecha,
-          total,
-          productos: venta.map((i) => ({
-            productoId: i.producto.id,
-            cantidad: i.cantidad,
-          })),
-        }),
-      });
+    // Guardar el ticket en backend
+    await authFetch(api("/api/tickets"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo_pago: tipo,
+        fecha,
+        total,
+        productos: venta.map((i) => ({
+          productoId: i.producto.id,
+          cantidad: i.cantidad,
+        })),
+      }),
+    });
 
-      // Guardamos datos para el ticket visual
-     setTicketGenerado({
-  fecha,
-  productos: venta.map((i) => ({
-    nombre: i.producto.nombre,
-    cantidad: i.cantidad,
-  })),
-  total: total.toFixed(2),
-});
+    // Mandar a imprimir
+    await authFetch(api("/api/imprimir"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fecha,
+        productos: venta.map((i) => ({
+          nombre: i.producto.nombre,
+          cantidad: i.cantidad,
+        })),
+        total: total.toFixed(2),
+      }),
+    });
 
+    // Guardamos datos para el ticket visual
+    setTicketGenerado({
+      fecha,
+      productos: venta.map((i) => ({
+        nombre: i.producto.nombre,
+        cantidad: i.cantidad,
+      })),
+      total: total.toFixed(2),
+    });
 
-      setVenta([]);
-      setInput("");
-    } catch (e: any) {
-      alert(e.message);
-    }
-  };
+    setVenta([]);
+    setInput("");
+  } catch (e: any) {
+    alert(e.message);
+  }
+};
+
 
   const totalVenta = venta.reduce(
     (acc, item) => acc + item.cantidad * item.producto.precio,
