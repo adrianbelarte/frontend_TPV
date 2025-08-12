@@ -6,6 +6,8 @@ import VentaPanel from "./VentaPanel";
 import Totales from "./Totales";
 import CategoriaSelector from "./CategoriaSelector";
 import ProductoGrid from "./ProductoGrid";
+import { TicketGenerado, type TicketData } from "../../components/Ticket/TicketGenerado";
+
 import type { Producto } from "../../types/producto"; 
 import type { Categoria } from "../../types/categoria";
 import type { VentaItem } from "../../types/venta";  
@@ -16,6 +18,7 @@ export default function Home() {
   const [productosVisibles, setProductosVisibles] = useState<Producto[]>([]);
   const [venta, setVenta] = useState<VentaItem[]>([]);
   const [input, setInput] = useState("");
+  const [ticketGenerado, setTicketGenerado] = useState<TicketData | null>(null);
 
   useEffect(() => {
     authFetch(api("/api/categorias"))
@@ -37,38 +40,37 @@ export default function Home() {
     }
   };
 
-const filtrarCategoria = async (catId: string | number | null) => {
-  let idNumber: number | null = null;
-  if (catId !== null) {
-    // Si viene string, parsear a number
-    idNumber = typeof catId === "string" ? parseInt(catId, 10) : catId;
-    if (isNaN(idNumber)) {
-      alert("ID de categoría inválido");
+  const filtrarCategoria = async (catId: string | number | null) => {
+    let idNumber: number | null = null;
+    if (catId !== null) {
+      idNumber = typeof catId === "string" ? parseInt(catId, 10) : catId;
+      if (isNaN(idNumber)) {
+        alert("ID de categoría inválido");
+        return;
+      }
+    }
+
+    if (idNumber === null) {
+      fetchProductosSinCategoria();
       return;
     }
-  }
 
-  if (idNumber === null) {
-    fetchProductosSinCategoria();
-    return;
-  }
-
-  try {
-    const data = await authFetch(api(`/api/categorias/${idNumber}/productos`));
-    setProductosVisibles(data as Producto[]);
-  } catch (err: any) {
-    alert("Error cargando productos de la categoría: " + err.message);
-  }
-};
-
+    try {
+      const data = await authFetch(api(`/api/categorias/${idNumber}/productos`));
+      setProductosVisibles(data as Producto[]);
+    } catch (err: any) {
+      alert("Error cargando productos de la categoría: " + err.message);
+    }
+  };
 
   const agregarProd = (prod: Producto) => {
     setVenta((prev) => {
       const ex = prev.find((i) => i.producto.id === prod.id);
-      if (ex)
+      if (ex) {
         return prev.map((i) =>
           i.producto.id === prod.id ? { ...i, cantidad: i.cantidad + 1 } : i
         );
+      }
       return [...prev, { producto: prod, cantidad: 1 }];
     });
   };
@@ -88,22 +90,34 @@ const filtrarCategoria = async (catId: string | number | null) => {
 
   const pagar = async (tipo: "efectivo" | "tarjeta") => {
     try {
+      const fecha = new Date().toLocaleString();
+      const total = venta.reduce((s, i) => s + i.cantidad * i.producto.precio, 0);
+
       await authFetch(api("/api/tickets"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tipo_pago: tipo,
-          fecha: new Date(),
-          total: venta.reduce(
-            (s, i) => s + i.cantidad * i.producto.precio,
-            0
-          ),
+          fecha,
+          total,
           productos: venta.map((i) => ({
             productoId: i.producto.id,
             cantidad: i.cantidad,
           })),
         }),
       });
+
+      // Guardamos datos para el ticket visual
+     setTicketGenerado({
+  fecha,
+  productos: venta.map((i) => ({
+    nombre: i.producto.nombre,
+    cantidad: i.cantidad,
+  })),
+  total: total.toFixed(2),
+});
+
+
       setVenta([]);
       setInput("");
     } catch (e: any) {
@@ -127,6 +141,12 @@ const filtrarCategoria = async (catId: string | number | null) => {
         <CategoriaSelector categorias={categorias} filtrarCategoria={filtrarCategoria} />
         <ProductoGrid productos={productosVisibles} onAgregar={agregarProd} />
       </div>
+
+      {ticketGenerado && (
+        <div className="ticket-preview">
+          <TicketGenerado ticket={ticketGenerado} />
+        </div>
+      )}
     </div>
   );
 }

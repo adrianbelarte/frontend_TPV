@@ -7,15 +7,19 @@ import type { Ticket, ProductoConTicketProducto } from "../../types/ticket";
 type Props = {
   ticket: Ticket;
   onClose: () => void;
-  onUpdated: () => void;
+  onUpdated: (ticketActualizado: Ticket) => void; // ahora pasamos el ticket nuevo
 };
 
 export default function TicketDetail({ ticket, onClose, onUpdated }: Props) {
   const [tipoPago, setTipoPago] = useState<string>(ticket.tipo_pago || "");
-  const [productos, setProductos] = useState<ProductoConTicketProducto[]>(ticket.productos || []);
+  const [productos, setProductos] = useState<ProductoConTicketProducto[]>(
+    ticket.productos || []
+  );
 
   function handleRemoveProducto(productoId: number) {
-    setProductos((prev) => prev.filter((p) => p.TicketProducto.productoId !== productoId));
+    setProductos((prev) =>
+      prev.filter((p) => p.TicketProducto.productoId !== productoId)
+    );
   }
 
   async function handleSave() {
@@ -28,15 +32,22 @@ export default function TicketDetail({ ticket, onClose, onUpdated }: Props) {
         })),
       };
 
+      // Guardar cambios
       await authFetch(api(`/api/tickets/${ticket.id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
+      // Volver a obtener el ticket actualizado
+      const ticketActualizado = await authFetch(
+        api(`/api/tickets/${ticket.id}`)
+      );
+
       alert("Ticket actualizado correctamente");
-      onUpdated();
-      onClose();
+
+      // Pasar el ticket actualizado al padre
+      onUpdated(ticketActualizado);
     } catch (err) {
       alert("Error al actualizar ticket");
       console.error(err);
@@ -49,7 +60,10 @@ export default function TicketDetail({ ticket, onClose, onUpdated }: Props) {
 
       <label>
         Forma de pago:
-        <select value={tipoPago} onChange={(e) => setTipoPago(e.target.value)}>
+        <select
+          value={tipoPago}
+          onChange={(e) => setTipoPago(e.target.value)}
+        >
           <option value="">Seleccionar</option>
           <option value="efectivo">Efectivo</option>
           <option value="tarjeta">Tarjeta</option>
@@ -60,7 +74,8 @@ export default function TicketDetail({ ticket, onClose, onUpdated }: Props) {
       <ul>
         {productos.map((producto) => (
           <li key={producto.id}>
-            {producto.nombre} — Cantidad: {producto.TicketProducto.cantidad} — Precio: {producto.precio.toFixed(2)} €
+            {producto.nombre} — Cantidad: {producto.TicketProducto.cantidad} — Precio:{" "}
+            {producto.precio.toFixed(2)} €
             <button onClick={() => handleRemoveProducto(producto.id)}>❌</button>
           </li>
         ))}

@@ -42,10 +42,16 @@ export default function TicketsContainer() {
       <div className="tickets-detail-container">
         {ticketSeleccionado ? (
           <TicketDetail
-            ticket={ticketSeleccionado}
-            onUpdated={fetchTickets}
-            onClose={() => setTicketSeleccionado(null)}
-          />
+  ticket={ticketSeleccionado}
+  onUpdated={(ticketActualizado) => {
+    setTickets((prev) =>
+      prev.map((t) => (t.id === ticketActualizado.id ? ticketActualizado : t))
+    );
+    setTicketSeleccionado(ticketActualizado);
+  }}
+  onClose={() => setTicketSeleccionado(null)}
+/>
+
         ) : (
           <p>Selecciona un ticket para ver el detalle.</p>
         )}
