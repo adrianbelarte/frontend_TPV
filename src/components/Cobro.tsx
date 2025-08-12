@@ -1,14 +1,9 @@
 import { useState, type ChangeEvent } from "react";
 import { imprimirTicket } from "../utils/imprimirTicket";
-
-type Ticket = {
-  // Define aquí los campos que usas del ticket
-  id: number;
-  // ...otros campos que necesites
-};
+import type { TicketData } from "../components/Ticket/TicketGenerado";
 
 type Props = {
-  ticket: Ticket;
+  ticket: TicketData;  // Usamos el tipo correcto
   onCobrado: () => void;
 };
 

@@ -7,7 +7,7 @@ import Totales from "./Totales";
 import CategoriaSelector from "./CategoriaSelector";
 import ProductoGrid from "./ProductoGrid";
 import { TicketGenerado, type TicketData } from "../../components/Ticket/TicketGenerado";
-
+const MODO_SIMULACION = import.meta.env.VITE_MODO_SIMULACION === "true";
 import type { Producto } from "../../types/producto"; 
 import type { Categoria } from "../../types/categoria";
 import type { VentaItem } from "../../types/venta";  
@@ -19,6 +19,7 @@ export default function Home() {
   const [venta, setVenta] = useState<VentaItem[]>([]);
   const [input, setInput] = useState("");
   const [ticketGenerado, setTicketGenerado] = useState<TicketData | null>(null);
+   const [tipoPago, setTipoPago] = useState<"efectivo" | "tarjeta">("efectivo")
 
   useEffect(() => {
     authFetch(api("/api/categorias"))
@@ -89,6 +90,7 @@ export default function Home() {
   };
 
 const pagar = async (tipo: "efectivo" | "tarjeta") => {
+   setTipoPago(tipo);
   try {
     const fecha = new Date().toLocaleString();
     const total = venta.reduce((s, i) => s + i.cantidad * i.producto.precio, 0);
@@ -159,8 +161,12 @@ const pagar = async (tipo: "efectivo" | "tarjeta") => {
 
       {ticketGenerado && (
         <div className="ticket-preview">
-          <TicketGenerado ticket={ticketGenerado} />
-        </div>
+    <TicketGenerado 
+      ticket={ticketGenerado} 
+      modoSimulacion={MODO_SIMULACION} 
+      tipoPago={tipoPago} 
+    />
+  </div>
       )}
     </div>
   );
