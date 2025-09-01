@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { authFetch } from "../../utils/authFetch";
 import { api } from "../../config/api";
-import SimulacionCierreCaja from "./SimulacionCierreCaja";
+import { CierreCajaGenerado } from "./CierreCajaGenerado";
+
+const modoSimulacion = import.meta.env.VITE_MODO_SIMULACION === "true";
 
 type ResumenCaja = {
   total_efectivo: number;
@@ -14,7 +16,7 @@ type RespuestaCerrarCaja = {
   resumen?: ResumenCaja;
   mensaje?: string;
   archivo?: string;
-  productos?: { nombre: string; cantidad: number }[]; // simulamos productos vendidos
+  productos?: { nombre: string; cantidad: number }[];
 };
 
 export default function CerrarCaja() {
@@ -43,8 +45,21 @@ export default function CerrarCaja() {
       if (res.resumen) setResumen(res.resumen);
       if (res.mensaje) setMensaje(res.mensaje);
       if (res.productos) setProductos(res.productos);
-      // ponemos la fecha actual para la simulación
-      setFecha(new Date().toLocaleString());
+
+      const fechaActual = new Date().toLocaleString();
+      setFecha(fechaActual);
+
+      if (!modoSimulacion && res.resumen) {
+        await authFetch(api("/api/imprimir-cierre"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fecha: fechaActual,
+            resumen: res.resumen,
+            productos: res.productos || [],
+          }),
+        });
+      }
 
       if (res.archivo) {
         const urlDescarga = `${import.meta.env.VITE_BASE_URL}${res.archivo}`;
@@ -81,7 +96,7 @@ export default function CerrarCaja() {
 
       {resumen && (
         <div style={{ marginTop: "2rem" }}>
-          <SimulacionCierreCaja fecha={fecha} resumen={resumen} productos={productos} />
+          <CierreCajaGenerado fecha={fecha} resumen={resumen} productos={productos} modoSimulacion={modoSimulacion} />
         </div>
       )}
     </div>

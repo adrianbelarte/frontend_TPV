@@ -7,11 +7,12 @@ import Totales from "./Totales";
 import CategoriaSelector from "./CategoriaSelector";
 import ProductoGrid from "./ProductoGrid";
 import { TicketGenerado, type TicketData } from "../../components/Ticket/TicketGenerado";
-const MODO_SIMULACION = import.meta.env.VITE_MODO_SIMULACION === "true";
 import type { Producto } from "../../types/producto"; 
 import type { Categoria } from "../../types/categoria";
 import type { VentaItem } from "../../types/venta";  
 import "./Home.css";
+
+const MODO_SIMULACION = import.meta.env.VITE_MODO_SIMULACION === "true";
 
 export default function Home() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -19,7 +20,7 @@ export default function Home() {
   const [venta, setVenta] = useState<VentaItem[]>([]);
   const [input, setInput] = useState("");
   const [ticketGenerado, setTicketGenerado] = useState<TicketData | null>(null);
-   const [tipoPago, setTipoPago] = useState<"efectivo" | "tarjeta">("efectivo")
+  const [tipoPago, setTipoPago] = useState<"efectivo" | "tarjeta">("efectivo");
 
   useEffect(() => {
     authFetch(api("/api/categorias"))
@@ -89,58 +90,73 @@ export default function Home() {
     });
   };
 
-const pagar = async (tipo: "efectivo" | "tarjeta") => {
-   setTipoPago(tipo);
-  try {
-    const fecha = new Date().toLocaleString();
-    const total = venta.reduce((s, i) => s + i.cantidad * i.producto.precio, 0);
+  const pagar = async (tipo: "efectivo" | "tarjeta") => {
+    setTipoPago(tipo);
+    try {
+      const fecha = new Date().toLocaleString();
+      const total = venta.reduce((s, i) => s + i.cantidad * i.producto.precio, 0);
 
-    // Guardar el ticket en backend
-    await authFetch(api("/api/tickets"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tipo_pago: tipo,
-        fecha,
-        total,
-        productos: venta.map((i) => ({
-          productoId: i.producto.id,
-          cantidad: i.cantidad,
-        })),
-      }),
-    });
+      // Guardar el ticket en backend
+      await authFetch(api("/api/tickets"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo_pago: tipo,
+          fecha,
+          total,
+          productos: venta.map((i) => ({
+            productoId: i.producto.id,
+            cantidad: i.cantidad,
+          })),
+        }),
+      });
 
-    // Mandar a imprimir
-    await authFetch(api("/api/imprimir"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      if (!MODO_SIMULACION) {
+        // Mandar a imprimir solo si no es simulación
+        await authFetch(api("/api/imprimir"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fecha,
+            productos: venta.map((i) => ({
+              nombre: i.producto.nombre,
+              cantidad: i.cantidad,
+            })),
+            total: total.toFixed(2),
+            tipo_pago: tipo,
+          }),
+        });
+      } else {
+        // Solo mostrar en pantalla
+        console.log("Simulación de impresión:", {
+          fecha,
+          productos: venta.map((i) => ({
+            nombre: i.producto.nombre,
+            cantidad: i.cantidad,
+          })),
+          total: total.toFixed(2),
+          tipo_pago: tipo,
+        });
+        alert("Ticket simulado en pantalla");
+      }
+
+      // Guardamos datos para el ticket visual
+      setTicketGenerado({
         fecha,
         productos: venta.map((i) => ({
           nombre: i.producto.nombre,
           cantidad: i.cantidad,
         })),
         total: total.toFixed(2),
-      }),
-    });
+        tipo_pago: tipo,
+      });
 
-    // Guardamos datos para el ticket visual
-    setTicketGenerado({
-      fecha,
-      productos: venta.map((i) => ({
-        nombre: i.producto.nombre,
-        cantidad: i.cantidad,
-      })),
-      total: total.toFixed(2),
-    });
-
-    setVenta([]);
-    setInput("");
-  } catch (e: any) {
-    alert(e.message);
-  }
-};
-
+      setVenta([]);
+      setInput("");
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
 
   const totalVenta = venta.reduce(
     (acc, item) => acc + item.cantidad * item.producto.precio,
@@ -161,15 +177,13 @@ const pagar = async (tipo: "efectivo" | "tarjeta") => {
 
       {ticketGenerado && (
         <div className="ticket-preview">
-    <TicketGenerado 
-      ticket={ticketGenerado} 
-      modoSimulacion={MODO_SIMULACION} 
-      tipoPago={tipoPago} 
-    />
-  </div>
+          <TicketGenerado 
+            ticket={ticketGenerado} 
+            modoSimulacion={MODO_SIMULACION} 
+            tipoPago={tipoPago} 
+          />
+        </div>
       )}
     </div>
   );
 }
-
-// <Calculator value={input} onChange={setInput} />

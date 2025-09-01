@@ -11,23 +11,23 @@ export interface TicketData {
   fecha: string;
   productos: TicketProduct[];
   total: string;
-  tipo_pago?: "efectivo" | "tarjeta";  // opcional
+  tipo_pago?: "efectivo" | "tarjeta";
 }
 
 interface TicketGeneradoProps {
   ticket: TicketData;
   modoSimulacion: boolean;
-  tipoPago: "efectivo" | "tarjeta";  // nuevo parámetro obligatorio
+  tipoPago: "efectivo" | "tarjeta";
 }
 
 export const TicketGenerado: React.FC<TicketGeneradoProps> = ({ ticket, modoSimulacion, tipoPago }) => {
-  React.useEffect(() => {
-    imprimirTicket(ticket, tipoPago); // Llamar automáticamente al mostrar el ticket
-  }, [ticket, tipoPago]);
+    React.useEffect(() => {
+    if (!modoSimulacion) {
+      imprimirTicket(ticket, tipoPago); // solo imprime si NO es simulación
+    }
+  }, [ticket, tipoPago, modoSimulacion]);
 
-  if (!modoSimulacion) {
-    return null;  // no mostrar nada si no es simulación
-  }
+  if (!modoSimulacion) return null; // no mostrar nada si impresión real
 
   return (
     <div className="ticket-simulation">

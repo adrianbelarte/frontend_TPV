@@ -1,0 +1,24 @@
+directories:
+  output: dist_electron
+  buildResources: build
+appId: com.grupomanhattan.tpv
+productName: TPV Grupo Manhattan
+files:
+  - filter:
+      - dist/**/*
+      - ../backend/**/*
+      - electron/main.js
+      - package.json
+asar: true
+win:
+  target: nsis
+  icon: electron/assets/manhattan.ico
+  verifyUpdateCodeSignature: false
+  forceCodeSigning: false
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+electronVersion: 37.4.0

@@ -10,20 +10,13 @@ export async function imprimirTicket(ticket: TicketData, tipoPago: "efectivo" | 
     return;
   }
 
-  try {
-    const res = await fetch(`${apiUrl}/api/imprimir`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...ticket,
-        tipo_pago: tipoPago,
-      }),
-    });
+  // Código de impresión real
+  const res = await fetch(`${apiUrl}/api/imprimir`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...ticket, tipo_pago: tipoPago }),
+  });
 
-    if (!res.ok) throw new Error("Error al enviar a impresora");
-    console.log("Ticket enviado a impresora térmica");
-  } catch (err) {
-    console.error(err);
-    throw err; // Para que el componente que llama capture el error
-  }
+  if (!res.ok) throw new Error("Error al enviar a impresora");
+  console.log("Ticket enviado a impresora térmica");
 }
