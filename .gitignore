@@ -29,3 +29,9 @@ dist_electron/*.exe
 dist_electron/*.asar
 
 
+# Ignorar todos los ejecutables y archivos de build de Electron
+dist_electron/**/*.exe
+dist_electron/**/*.asar
+
+# Ignorar archivos de configuración local
+.env*
