@@ -22,3 +22,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Instala Git LFS si no lo tienes
+git lfs install
+
+# Indica los tipos de archivos grandes que quieres rastrear
+git lfs track "*.exe"
+git lfs track "*.asar"
+
+# Asegúrate de que Git añada el .gitattributes generado
+git add .gitattributes
+
+# Re-commit tus archivos grandes
+git add <archivos grandes>
+git commit -m "Añadiendo archivos grandes con LFS"
+
+# Finalmente, haz push
+git push origin main
+
