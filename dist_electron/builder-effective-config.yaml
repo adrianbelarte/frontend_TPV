@@ -6,9 +6,13 @@ productName: TPV Grupo Manhattan
 files:
   - filter:
       - dist/**/*
-      - ../backend/**/*
-      - electron/main.js
+      - electron/**/*
       - package.json
+extraResources:
+  - from: ../backend
+    to: backend
+    filter:
+      - '**/*'
 asar: true
 win:
   target: nsis
