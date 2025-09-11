@@ -41,3 +41,8 @@ dist_electron/
 *.asar
 
 dist_electron/
+
+# Ignorar builds pesados
+dist_electron/win-unpacked/resources/app.asar
+dist_electron/win-unpacked/TPV Grupo Manhattan.exe
+dist_electron/TPV Grupo Manhattan Setup 0.0.0.exe
