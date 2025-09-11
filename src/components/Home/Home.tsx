@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { authFetch } from "../../utils/authFetch";
 import { api } from "../../config/api";
 
 import VentaPanel from "./VentaPanel";
@@ -23,8 +22,8 @@ export default function Home() {
   const [tipoPago, setTipoPago] = useState<"efectivo" | "tarjeta">("efectivo");
 
   useEffect(() => {
-    authFetch(api("/api/categorias"))
-      .then(setCategorias)
+    api.get<Categoria[]>("/categorias")
+      .then((res) => setCategorias(res.data))
       .catch((err) => alert("Error cargando categorías: " + err.message));
 
     fetchProductosSinCategoria();
@@ -32,10 +31,8 @@ export default function Home() {
 
   const fetchProductosSinCategoria = async () => {
     try {
-      const allProductos = await authFetch(api("/api/productos"));
-      const sinCategoria = (allProductos as Producto[]).filter(
-        (p) => !p.categoriaId
-      );
+      const { data: allProductos } = await api.get<Producto[]>("/productos");
+      const sinCategoria = allProductos.filter((p) => !p.categoriaId);
       setProductosVisibles(sinCategoria);
     } catch (err: any) {
       alert("Error cargando productos sin categoría: " + err.message);
@@ -58,8 +55,8 @@ export default function Home() {
     }
 
     try {
-      const data = await authFetch(api(`/api/categorias/${idNumber}/productos`));
-      setProductosVisibles(data as Producto[]);
+      const { data } = await api.get<Producto[]>(`/categorias/${idNumber}/productos`);
+      setProductosVisibles(data);
     } catch (err: any) {
       alert("Error cargando productos de la categoría: " + err.message);
     }
@@ -96,39 +93,18 @@ export default function Home() {
       const fecha = new Date().toLocaleString();
       const total = venta.reduce((s, i) => s + i.cantidad * i.producto.precio, 0);
 
-      // Guardar el ticket en backend
-      await authFetch(api("/api/tickets"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo_pago: tipo,
-          fecha,
-          total,
-          productos: venta.map((i) => ({
-            productoId: i.producto.id,
-            cantidad: i.cantidad,
-          })),
-        }),
+      await api.post("/tickets", {
+        tipo_pago: tipo,
+        fecha,
+        total,
+        productos: venta.map((i) => ({
+          productoId: i.producto.id,
+          cantidad: i.cantidad,
+        })),
       });
 
       if (!MODO_SIMULACION) {
-        // Mandar a imprimir solo si no es simulación
-        await authFetch(api("/api/imprimir"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fecha,
-            productos: venta.map((i) => ({
-              nombre: i.producto.nombre,
-              cantidad: i.cantidad,
-            })),
-            total: total.toFixed(2),
-            tipo_pago: tipo,
-          }),
-        });
-      } else {
-        // Solo mostrar en pantalla
-        console.log("Simulación de impresión:", {
+        await api.post("/imprimir", {
           fecha,
           productos: venta.map((i) => ({
             nombre: i.producto.nombre,
@@ -137,10 +113,11 @@ export default function Home() {
           total: total.toFixed(2),
           tipo_pago: tipo,
         });
+      } else {
+        console.log("Simulación de impresión:", { fecha, productos: venta, total, tipo_pago: tipo });
         alert("Ticket simulado en pantalla");
       }
 
-      // Guardamos datos para el ticket visual
       setTicketGenerado({
         fecha,
         productos: venta.map((i) => ({
@@ -177,11 +154,7 @@ export default function Home() {
 
       {ticketGenerado && (
         <div className="ticket-preview">
-          <TicketGenerado 
-            ticket={ticketGenerado} 
-            modoSimulacion={MODO_SIMULACION} 
-            tipoPago={tipoPago} 
-          />
+          <TicketGenerado ticket={ticketGenerado} modoSimulacion={MODO_SIMULACION} tipoPago={tipoPago} />
         </div>
       )}
     </div>

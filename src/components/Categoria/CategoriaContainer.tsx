@@ -4,12 +4,10 @@ import CategoriaForm from "./CategoriaForm";
 import "./CategoriaContainer.css";
 import ProductoList from "../Producto/ProductoList";
 import { AuthContext } from "../../context/AuthContext";
-import { authFetch } from "../../utils/authFetch";
 import { toast } from "react-toastify";
 import { api } from "../../config/api";
 import type { Categoria, CategoriaInput } from "../../types/categoria";
 import type { Producto } from "../../types/producto";
-
 
 export default function CategoriaContainer() {
   const authContext = useContext(AuthContext);
@@ -21,17 +19,17 @@ export default function CategoriaContainer() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [error, setError] = useState<string | null>(null);
-  // Cambia el estado a CategoriaInput para que id sea opcional
   const [categoriaEdit, setCategoriaEdit] = useState<CategoriaInput | null>(null);
 
   useEffect(() => {
     fetchCategorias();
   }, []);
 
+  // ✅ Axios directo
   async function fetchCategorias() {
     try {
-      const data = (await authFetch(api("/api/categorias"))) as Categoria[];
-      setCategorias(data);
+      const res = await api.get<Categoria[]>("/categorias");
+      setCategorias(res.data);
     } catch (err: any) {
       setError(err.message);
     }
@@ -39,14 +37,14 @@ export default function CategoriaContainer() {
 
   async function handleCategoriaClick(cat: Categoria | null) {
     try {
-      let data: Producto[];
+      let res;
       if (!cat || cat.id == null) {
-        data = (await authFetch(api("/api/productos"))) as Producto[];
-        data = data.filter((p) => !p.categoriaId);
+        res = await api.get<Producto[]>("/productos");
+        setProductos(res.data.filter((p) => !p.categoriaId));
       } else {
-        data = (await authFetch(api(`/api/categorias/${cat.id}/productos`))) as Producto[];
+        res = await api.get<Producto[]>(`/categorias/${cat.id}/productos`);
+        setProductos(res.data);
       }
-      setProductos(data);
     } catch (err: any) {
       setError("Error al cargar productos: " + err.message);
     }
@@ -66,12 +64,7 @@ export default function CategoriaContainer() {
         ],
       };
 
-      await authFetch(api("/api/tickets"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
+      await api.post("/tickets", body);
       toast.success(`Ticket creado para ${producto.nombre}`);
     } catch (err: any) {
       toast.error("Error al crear ticket: " + err.message);
@@ -79,76 +72,74 @@ export default function CategoriaContainer() {
   }
 
   function handleEdit(cat: Categoria) {
-    setCategoriaEdit(cat); // cat tiene id obligatorio, asigna a estado con id opcional, es seguro
+    setCategoriaEdit(cat);
   }
 
   function handleCancel() {
     setCategoriaEdit(null);
   }
 
-  // Aquí la función es async y recibe CategoriaInput (id opcional)
- async function handleSave(formData: FormData): Promise<void> {
-  try {
-    const id = formData.get("id");
-    const method = id ? "PUT" : "POST";
-    const url = id
-      ? api(`/api/categorias/${id}`)
-      : api("/api/categorias");
+  async function handleSave(formData: FormData): Promise<void> {
+    try {
+      const id = formData.get("id");
+      if (id) {
+        await api.put(`/categorias/${id}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else {
+        await api.post("/categorias", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
 
-    await authFetch(url, {
-      method,
-      body: formData,
-    });
-
-    toast.success(`Categoría ${id ? "actualizada" : "creada"} correctamente`);
-    setCategoriaEdit(null);
-    fetchCategorias();
-  } catch (err: any) {
-    toast.error("Error al guardar la categoría: " + err.message);
+      toast.success(`Categoría ${id ? "actualizada" : "creada"} correctamente`);
+      setCategoriaEdit(null);
+      fetchCategorias();
+    } catch (err: any) {
+      toast.error("Error al guardar la categoría: " + err.message);
+    }
   }
-}
-
 
   return (
-  <div className="categoria-container">
-    <div>
-      <h1>Categorías</h1>
-      {error && <p style={{ color: "red" }}>Error: {error}</p>}
+    <div className="categoria-container">
+      <div>
+        <h1>Categorías</h1>
+        {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
-      {isLoggedIn && (
-        <CategoriaForm
-          onSave={handleSave}
-          categoriaEdit={categoriaEdit}
-          onCancel={handleCancel}
-        />
-      )}
-    </div>
+        {isLoggedIn && (
+          <CategoriaForm
+            onSave={handleSave}
+            categoriaEdit={categoriaEdit}
+            onCancel={handleCancel}
+          />
+        )}
+      </div>
 
-    <div style={{ flex: 1 }}>
-      <CategoriaList
-        categorias={categorias}
-        onEdit={isLoggedIn ? handleEdit : undefined}
-        onDelete={
-          isLoggedIn
-            ? async (id: number) => {
-                if (window.confirm("¿Eliminar categoría?")) {
-                  await authFetch(api(`/api/categorias/${id}`), { method: "DELETE" });
-                  fetchCategorias();
-                }
-              }
-            : undefined
-        }
-        onClick={handleCategoriaClick}
-      />
-
-      {productos.length > 0 && (
-        <ProductoList
-          productos={productos}
+      <div style={{ flex: 1 }}>
+        <CategoriaList
           categorias={categorias}
-          onProductoClick={handleProductoClick}
+          onEdit={isLoggedIn ? handleEdit : undefined}
+          onDelete={
+            isLoggedIn
+              ? async (id: number) => {
+                  if (window.confirm("¿Eliminar categoría?")) {
+                    await api.delete(`/categorias/${id}`);
+                    fetchCategorias();
+                  }
+                }
+              : undefined
+          }
+          onClick={handleCategoriaClick}
         />
-      )}
+
+        {productos.length > 0 && (
+          <ProductoList
+            productos={productos}
+            categorias={categorias}
+            onProductoClick={handleProductoClick}
+          />
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
 }

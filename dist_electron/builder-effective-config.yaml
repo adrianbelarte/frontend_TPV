@@ -5,20 +5,28 @@ appId: com.grupomanhattan.tpv
 productName: TPV Grupo Manhattan
 files:
   - filter:
-      - dist/**/*
       - electron/**/*
       - package.json
 extraResources:
+  - from: dist
+    to: app/dist
+    filter:
+      - '**/*'
   - from: ../backend
     to: backend
     filter:
       - '**/*'
+  - from: ../backend/node_modules
+    to: backend/node_modules
+    filter:
+      - '**/*'
+asarUnpack:
+  - app/dist/**/*
+  - backend/**/*
 asar: true
 win:
   target: nsis
   icon: electron/assets/manhattan.ico
-  verifyUpdateCodeSignature: false
-  forceCodeSigning: false
 nsis:
   oneClick: false
   perMachine: false

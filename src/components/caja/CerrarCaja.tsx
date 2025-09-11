@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { authFetch } from "../../utils/authFetch";
 import { api } from "../../config/api";
 import { CierreCajaGenerado } from "./CierreCajaGenerado";
 
@@ -36,9 +35,7 @@ export default function CerrarCaja() {
     setFecha("");
 
     try {
-      const res = (await authFetch(api("/api/cerrar-caja"), {
-        method: "POST",
-      })) as RespuestaCerrarCaja;
+      const { data: res } = await api.post<RespuestaCerrarCaja>("/cerrar-caja");
 
       if (res.error) throw new Error(res.error);
 
@@ -50,14 +47,10 @@ export default function CerrarCaja() {
       setFecha(fechaActual);
 
       if (!modoSimulacion && res.resumen) {
-        await authFetch(api("/api/imprimir-cierre"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fecha: fechaActual,
-            resumen: res.resumen,
-            productos: res.productos || [],
-          }),
+        await api.post("/imprimir-cierre", {
+          fecha: fechaActual,
+          resumen: res.resumen,
+          productos: res.productos || [],
         });
       }
 

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { authFetch } from "../../utils/authFetch";
 import TicketDetail from "./TicketDetail";
 import { api } from "../../config/api";
 import "./TicketsContainer.css";
@@ -15,10 +14,10 @@ export default function TicketsContainer() {
 
   async function fetchTickets() {
     try {
-      const data = await authFetch(api("/api/tickets"));
+      const { data } = await api.get<Ticket[]>("/tickets");
       setTickets(data);
-    } catch (err) {
-      console.error("Error al cargar tickets:", err);
+    } catch (err: any) {
+      console.error("Error al cargar tickets:", err.message);
     }
   }
 
@@ -42,16 +41,15 @@ export default function TicketsContainer() {
       <div className="tickets-detail-container">
         {ticketSeleccionado ? (
           <TicketDetail
-  ticket={ticketSeleccionado}
-  onUpdated={(ticketActualizado) => {
-    setTickets((prev) =>
-      prev.map((t) => (t.id === ticketActualizado.id ? ticketActualizado : t))
-    );
-    setTicketSeleccionado(ticketActualizado);
-  }}
-  onClose={() => setTicketSeleccionado(null)}
-/>
-
+            ticket={ticketSeleccionado}
+            onUpdated={(ticketActualizado) => {
+              setTickets((prev) =>
+                prev.map((t) => (t.id === ticketActualizado.id ? ticketActualizado : t))
+              );
+              setTicketSeleccionado(ticketActualizado);
+            }}
+            onClose={() => setTicketSeleccionado(null)}
+          />
         ) : (
           <p>Selecciona un ticket para ver el detalle.</p>
         )}

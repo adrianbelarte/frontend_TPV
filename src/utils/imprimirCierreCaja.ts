@@ -1,32 +1,12 @@
 import { api } from "../config/api";
-import { authFetch } from "./authFetch";
 
-type ResumenCaja = {
-  total_efectivo: number;
-  total_tarjeta: number;
-  total_general: number;
-};
-
-type ProductoVenta = {
-  nombre: string;
-  cantidad: number;
-};
-
-type CierreCajaData = {
-  fecha: string;
-  resumen: ResumenCaja;
-  productos: ProductoVenta[];
-};
-
-export async function imprimirCierreCaja(cierre: CierreCajaData) {
+export async function imprimirCierreCaja() {
   try {
-    await authFetch(api("/api/imprimir-cierre"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(cierre),
-    });
+    const { data } = await api.post("/cierre-caja/imprimir"); 
+    return data;
   } catch (err: any) {
-    console.error("Error al imprimir cierre:", err);
-    alert("No se pudo imprimir el cierre de caja");
+    console.error("Error al imprimir cierre de caja:", err);
+    throw err;
   }
 }
+

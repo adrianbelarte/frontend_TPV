@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { authFetch } from "../../utils/authFetch";
 import { api } from "../../config/api";
 import "./TicketDetail.css";
 import type { Ticket, ProductoConTicketProducto } from "../../types/ticket";
@@ -7,7 +6,7 @@ import type { Ticket, ProductoConTicketProducto } from "../../types/ticket";
 type Props = {
   ticket: Ticket;
   onClose: () => void;
-  onUpdated: (ticketActualizado: Ticket) => void; // ahora pasamos el ticket nuevo
+  onUpdated: (ticketActualizado: Ticket) => void;
 };
 
 export default function TicketDetail({ ticket, onClose, onUpdated }: Props) {
@@ -32,24 +31,17 @@ export default function TicketDetail({ ticket, onClose, onUpdated }: Props) {
         })),
       };
 
-      // Guardar cambios
-      await authFetch(api(`/api/tickets/${ticket.id}`), {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      // Guardar cambios con Axios
+      await api.put(`/tickets/${ticket.id}`, payload);
 
       // Volver a obtener el ticket actualizado
-      const ticketActualizado = await authFetch(
-        api(`/api/tickets/${ticket.id}`)
-      );
+      const { data: ticketActualizado } = await api.get(`/tickets/${ticket.id}`);
 
       alert("Ticket actualizado correctamente");
 
-      // Pasar el ticket actualizado al padre
       onUpdated(ticketActualizado);
-    } catch (err) {
-      alert("Error al actualizar ticket");
+    } catch (err: any) {
+      alert("Error al actualizar ticket: " + err.message);
       console.error(err);
     }
   }
@@ -60,10 +52,7 @@ export default function TicketDetail({ ticket, onClose, onUpdated }: Props) {
 
       <label>
         Forma de pago:
-        <select
-          value={tipoPago}
-          onChange={(e) => setTipoPago(e.target.value)}
-        >
+        <select value={tipoPago} onChange={(e) => setTipoPago(e.target.value)}>
           <option value="">Seleccionar</option>
           <option value="efectivo">Efectivo</option>
           <option value="tarjeta">Tarjeta</option>

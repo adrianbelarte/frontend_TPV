@@ -1,7 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import EmpresaForm from "./EmpresaForm";
 import { AuthContext } from "../../context/AuthContext";
-import { authFetch } from "../../utils/authFetch";
 import { toast } from "react-toastify";
 import { api } from "../../config/api";
 import type { Empresa, EmpresaInput } from "../../types/empresa";
@@ -10,7 +9,6 @@ import "./EmpresaContainer.css";
 export default function EmpresaContainer() {
   const { isLoggedIn } = useContext(AuthContext)!;
 
-  // Tipo Empresa o null al inicio
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState<boolean>(false);
@@ -21,11 +19,11 @@ export default function EmpresaContainer() {
 
   async function fetchEmpresa() {
     try {
-      const data = (await authFetch(api("/api/empresa"))) as Empresa | null;
+      const { data } = await api.get<Empresa | null>("/empresa");
 
       if (!data || Object.keys(data).length === 0) {
         setEmpresa(null);
-        setEditMode(true); // Modo creación si no hay datos
+        setEditMode(true);
       } else {
         setEmpresa(data);
         setEditMode(false);
@@ -38,17 +36,13 @@ export default function EmpresaContainer() {
 
   async function handleSave(empresaData: EmpresaInput) {
     try {
-      const method = empresa ? "PUT" : "POST";
+      if (empresa) {
+        await api.put("/empresa", empresaData);
+      } else {
+        await api.post("/empresa", empresaData);
+      }
 
-      await authFetch(api("/api/empresa"), {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(empresaData),
-      });
-
-      toast.success(
-        empresa ? "Empresa actualizada correctamente" : "Empresa creada correctamente"
-      );
+      toast.success(empresa ? "Empresa actualizada correctamente" : "Empresa creada correctamente");
       setEditMode(false);
       fetchEmpresa();
     } catch (err: any) {

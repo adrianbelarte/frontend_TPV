@@ -39,3 +39,5 @@ dist_electron/**/*.asar
 dist_electron/
 *.exe
 *.asar
+
+dist_electron/

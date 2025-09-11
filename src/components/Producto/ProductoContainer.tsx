@@ -2,8 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import ProductoList from "../Producto/ProductoList";
 import ProductoForm from "../Producto/ProductoForm";
 import { AuthContext } from "../../context/AuthContext";
-import { authFetch } from "../../utils/authFetch";
-import { api } from "../../config/api";
+import { api } from "../../config/api"; // nuestro cliente Axios
 import type { Categoria } from "../../types/categoria";
 import type { Producto, ProductoExtra, ProductoInput } from "../../types/producto";
 import "./ProductoContainer.css";
@@ -29,10 +28,11 @@ export default function ProductoContainer() {
     fetchProductosExtras();
   }, []);
 
+  // 🚀 Usando Axios
   async function fetchProductos() {
     try {
-      const data = await authFetch(api("/api/productos"));
-      setProductos(data);
+      const res = await api.get<Producto[]>("/productos");
+      setProductos(res.data);
     } catch (err: any) {
       setError(err.message);
     }
@@ -40,8 +40,8 @@ export default function ProductoContainer() {
 
   async function fetchCategorias() {
     try {
-      const data = await authFetch(api("/api/categorias"));
-      setCategorias(data);
+      const res = await api.get<Categoria[]>("/categorias");
+      setCategorias(res.data);
     } catch (err: any) {
       setError(err.message);
     }
@@ -49,8 +49,8 @@ export default function ProductoContainer() {
 
   async function fetchProductosExtras() {
     try {
-      const data = await authFetch(api("/api/productos"));
-      setProductosExtras(data);
+      const res = await api.get<ProductoExtra[]>("/productos");
+      setProductosExtras(res.data);
     } catch (err: any) {
       setError(err.message);
     }
@@ -58,16 +58,11 @@ export default function ProductoContainer() {
 
   async function handleSave(producto: ProductoInput) {
     try {
-      const method = producto.id ? "PUT" : "POST";
-      const url = producto.id
-        ? api(`/api/productos/${producto.id}`)
-        : api("/api/productos");
-
-      await authFetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(producto),
-      });
+      if (producto.id) {
+        await api.put(`/productos/${producto.id}`, producto);
+      } else {
+        await api.post("/productos", producto);
+      }
 
       await fetchProductos();
       setProductoEdit(null);
@@ -80,7 +75,7 @@ export default function ProductoContainer() {
     if (!window.confirm("¿Estás seguro de que quieres eliminar este producto?")) return;
 
     try {
-      await authFetch(api(`/api/productos/${id}`), { method: "DELETE" });
+      await api.delete(`/productos/${id}`);
       await fetchProductos();
     } catch (err: any) {
       setError(err.message);
@@ -88,46 +83,45 @@ export default function ProductoContainer() {
   }
 
   return (
-  <div className="producto-container">
-    <h1>Productos</h1>
+    <div className="producto-container">
+      <h1>Productos</h1>
 
-    {error && <p style={{ color: "red" }}>Error: {error}</p>}
+      {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
-    <div className="producto-panel">
-      {isLoggedIn && (
-        <div className="producto-form-wrapper">
-          <ProductoForm
-            onSave={handleSave}
-            productoEdit={productoEdit}
-            onCancel={() => setProductoEdit(null)}
+      <div className="producto-panel">
+        {isLoggedIn && (
+          <div className="producto-form-wrapper">
+            <ProductoForm
+              onSave={handleSave}
+              productoEdit={productoEdit}
+              onCancel={() => setProductoEdit(null)}
+              categorias={categorias}
+              productosExtras={productosExtras}
+            />
+          </div>
+        )}
+
+        <div className="producto-list-wrapper">
+          <ProductoList
+            productos={productos}
             categorias={categorias}
-            productosExtras={productosExtras}
+            onEdit={
+              isLoggedIn
+                ? (producto) =>
+                    setProductoEdit({
+                      id: producto.id,
+                      nombre: producto.nombre,
+                      precio: producto.precio,
+                      categoriaId: producto.categoriaId,
+                      imagen: producto.imagen,
+                      extras: producto.extras?.map((e: any) => e.id) ?? [],
+                    })
+                : undefined
+            }
+            onDelete={isLoggedIn ? handleDelete : undefined}
           />
         </div>
-      )}
-
-      <div className="producto-list-wrapper">
-        <ProductoList
-          productos={productos}
-          categorias={categorias}
-          onEdit={
-            isLoggedIn
-              ? (producto) =>
-                  setProductoEdit({
-                    id: producto.id,
-                    nombre: producto.nombre,
-                    precio: producto.precio,
-                    categoriaId: producto.categoriaId,
-                    imagen: producto.imagen,
-                    extras: producto.extras?.map((e: any) => e.id) ?? [],
-                  })
-              : undefined
-          }
-          onDelete={isLoggedIn ? handleDelete : undefined}
-        />
       </div>
     </div>
-  </div>
-);
-
+  );
 }
