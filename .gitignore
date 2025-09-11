@@ -7,10 +7,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node modules
 node_modules
+
+# Builds generales
 dist
 dist-ssr
+
+# Archivos locales
 *.local
+.env*
 
 # Editor directories and files
 .vscode/*
@@ -24,25 +30,9 @@ dist-ssr
 *.sw?
 
 # Electron build outputs
-dist_electron/win-unpacked/
-dist_electron/*.exe
-dist_electron/*.asar
-
-
-# Ignorar todos los ejecutables y archivos de build de Electron
+dist_electron/
 dist_electron/**/*.exe
 dist_electron/**/*.asar
-
-# Ignorar archivos de configuración local
-.env*
-
-dist_electron/
-*.exe
-*.asar
-
-dist_electron/
-
-# Ignorar builds pesados
 dist_electron/win-unpacked/resources/app.asar
 dist_electron/win-unpacked/TPV Grupo Manhattan.exe
 dist_electron/TPV Grupo Manhattan Setup 0.0.0.exe
