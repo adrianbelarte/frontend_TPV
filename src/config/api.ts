@@ -1,12 +1,13 @@
 // src/config/api.ts
 import axios from "axios";
 
+const base = import.meta.env.VITE_APP_API_URL || "http://localhost:3000";
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
+  baseURL: `${base}/api`,
   headers: { "Content-Type": "application/json" },
 });
 
-// Interceptor para meter el token en cada petición
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
