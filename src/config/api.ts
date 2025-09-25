@@ -1,8 +1,10 @@
+// src/config/api.ts
 import axios from "axios";
 
 const base = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 export const api = axios.create({
-  baseURL: `${base}/api`,
+  baseURL: `${base}/api`,        // <-- aquí añadimos /api
   headers: { "Content-Type": "application/json" },
 });
 
@@ -12,5 +14,5 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Debug útil para confirmar a dónde apunta en producción:
+// Debug útil: confirma a dónde apunta en runtime
 console.log("[API baseURL]", api.defaults.baseURL);
