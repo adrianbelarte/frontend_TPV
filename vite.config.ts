@@ -5,10 +5,17 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  base: './', // imprescindible para file:// en Electron
+  base: './', // necesario en Electron (file://)
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      '@admin': path.resolve(__dirname, 'src/pages/admin'),
+    },
+  },
+  server: {
+    proxy: {
+      '/api':     { target: 'http://localhost:3000', changeOrigin: true },
+      '/uploads': { target: 'http://localhost:3000', changeOrigin: true },
     },
   },
   build: {

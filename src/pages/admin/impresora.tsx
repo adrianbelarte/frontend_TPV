@@ -1,0 +1,3 @@
+import PrinterSettingsAdmin from "./pages/admin/PrinterSettingsAdmin";
+// ...
+<Route path="impresora" element={<PrinterSettingsAdmin />} />

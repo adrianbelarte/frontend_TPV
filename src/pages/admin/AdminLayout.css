@@ -1,0 +1,12 @@
+.admin-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  height: calc(100vh - 60px);
+  overflow-x: hidden;           /* ⬅️ añade esto */
+}
+
+.admin-content {
+  padding: 16px;
+  overflow-y: auto;             /* solo Y */
+  overflow-x: hidden;           /* ⬅️ y esto */
+}

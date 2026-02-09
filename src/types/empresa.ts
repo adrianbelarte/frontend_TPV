@@ -1,17 +1,12 @@
-export interface Empresa {
-  id: number;
+// src/types/empresa.ts
+export type Empresa = {
+  id?: number;
   nombre: string;
-  direccion: string;
-  telefono: string;
-  correo: string;
-  cif: string;
-}
+  direccion?: string | null;
+  telefono?: string | null;
+  correo?: string | null;
+  cif?: string | null;
+  logo?: string | null; // 👈 NUEVO
+};
 
-export interface EmpresaInput {
-  id?: number;           
-  nombre: string;
-  direccion: string;
-  telefono: string;
-  correo: string;
-  cif: string;
-}
+export type EmpresaInput = Omit<Empresa, "id">;

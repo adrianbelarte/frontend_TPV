@@ -6,12 +6,9 @@ productName: TPV Grupo Manhattan
 files:
   - filter:
       - electron/**/*
+      - dist/**/*
       - package.json
 extraResources:
-  - from: dist
-    to: app/dist
-    filter:
-      - '**/*'
   - from: ../backend
     to: backend
     filter:
@@ -20,8 +17,9 @@ extraResources:
     to: backend/node_modules
     filter:
       - '**/*'
+  - from: build/README_Cliente.txt
+    to: README_Cliente.txt
 asarUnpack:
-  - app/dist/**/*
   - backend/**/*
 asar: true
 win:
@@ -33,4 +31,4 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-electronVersion: 37.4.0
+electronVersion: 37.7.0

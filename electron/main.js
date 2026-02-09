@@ -1,115 +1,214 @@
-import { app, BrowserWindow } from 'electron';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
-import http from 'node:http';
-import https from 'node:https';
-import fs from 'fs';
+// frontend/electron/main.js (ESM)
+import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { fork } from 'node:child_process';
+import fs from 'node:fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-let mainWindow = null;
-let backendProcess = null;
+// Usa app.isPackaged para distinguir build vs dev
+const isDev = !app.isPackaged;
+const VITE_DEV_SERVER = process.env.VITE_DEV_SERVER || 'http://localhost:5173';
 
-// Detecta entorno de desarrollo
-function isDev() {
-  return process.env.NODE_ENV === 'development' || process.env.ELECTRON_START_URL;
-}
-
-// Arranca el backend
-function startBackend() {
-  const backendEntryDev = path.resolve(__dirname, '../../backend/app.js');
-  const backendEntryProd = path.join(process.resourcesPath, 'backend', 'app.js');
-
-  const entry = isDev() ? backendEntryDev : backendEntryProd;
-  const cwd = isDev() ? path.resolve(__dirname, '../../backend') : path.join(process.resourcesPath, 'backend');
-
-  console.log('🔎 Backend entry:', entry);
-  console.log('🔎 Backend cwd:', cwd);
-  console.log('📂 ¿Existe backend?', fs.existsSync(entry));
-
-  backendProcess = spawn('node', [entry], { cwd, shell: true, stdio: 'inherit' });
-
-  backendProcess.on('error', (err) => console.error('❌ Error arrancando backend:', err));
-  backendProcess.on('exit', (code, signal) => console.log('⚠️ Backend finalizó con', { code, signal }));
-}
-
-// Espera a que el backend responda
-function waitForBackend(url = 'http://localhost:3000/', timeoutMs = 15000, intervalMs = 200) {
+let backendProc = null;
+function waitForBackend({ url = 'http://127.0.0.1:3000/api/health', tries = 20, intervalMs = 500 } = {}) {
   return new Promise((resolve, reject) => {
-    const start = Date.now();
-    function attempt() {
-      let parsedUrl;
-      try { parsedUrl = new URL(url); } 
-      catch { return reject(new Error('URL de backend inválida: ' + url)); }
-
-      const lib = parsedUrl.protocol === 'https:' ? https : http;
-      const req = lib.request(
-        { method: 'GET', hostname: parsedUrl.hostname, port: parsedUrl.port, path: parsedUrl.pathname || '/', timeout: 2000 },
-        (res) => {
-          if (res.statusCode >= 200 && res.statusCode < 400) resolve();
-          else if (Date.now() - start > timeoutMs) reject(new Error('Timeout backend (status ' + res.statusCode + ')'));
-          else setTimeout(attempt, intervalMs);
-          res.resume();
+    let attempt = 0;
+    const tick = () => {
+      attempt++;
+      // Intento HTTP sencillo a /health
+      const req = http.get(url, (res) => {
+        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 500) {
+          res.resume(); // drena
+          return resolve(true);
         }
-      );
-      req.on('error', () => Date.now() - start > timeoutMs ? reject(new Error('Timeout backend (connection error)')) : setTimeout(attempt, intervalMs));
-      req.on('timeout', () => { req.destroy(); if(Date.now()-start>timeoutMs) reject(new Error('Timeout backend (request timeout)')); else setTimeout(attempt, intervalMs); });
-      req.end();
-    }
-    attempt();
+        res.resume();
+        if (attempt >= tries) return reject(new Error(`Backend no responde: ${url} (HTTP ${res.statusCode})`));
+        setTimeout(tick, intervalMs);
+      });
+      req.on('error', () => {
+        if (attempt >= tries) return reject(new Error(`Backend no responde: ${url}`));
+        setTimeout(tick, intervalMs);
+      });
+      req.setTimeout(300, () => { req.destroy(new Error('timeout')); });
+    };
+    tick();
   });
 }
 
-// Crea la ventana de Electron
-async function createWindow() {
-  if (mainWindow) return;
+/** Devuelve la primera ruta de entry del backend que exista */
+function resolveBackendEntry() {
+  // Candidatos típicos de entry
+  const candidates = isDev
+    ? [
+        path.join(__dirname, '..', '..', 'backend', 'server.js'),
+        path.join(__dirname, '..', '..', 'backend', 'app.js'),
+        path.join(__dirname, '..', '..', 'backend', 'index.js'),
+      ]
+    : [
+        path.join(process.resourcesPath, 'backend', 'server.js'),
+        path.join(process.resourcesPath, 'backend', 'app.js'),
+        path.join(process.resourcesPath, 'backend', 'index.js'),
+        // fallback a ruta local si por algún motivo no se copió bien
+        path.join(__dirname, '..', '..', 'backend', 'server.js'),
+        path.join(__dirname, '..', '..', 'backend', 'app.js'),
+        path.join(__dirname, '..', '..', 'backend', 'index.js'),
+      ];
 
+  for (const f of candidates) {
+    if (fs.existsSync(f)) return f;
+  }
+  return null;
+}
+
+/** Arranca el backend, si existe entry */
+function startBackend() {
+  const entry = resolveBackendEntry();
+  console.log('[Electron] backend entry:', entry);
+  if (!entry) {
+    console.error('[Electron] No se encontró el entry del backend (server.js / app.js / index.js).');
+    return;
+  }
+
+  // ⚠️ Directorio del backend (packaged o local)
+  const backendDir = path.dirname(entry);
+
+  // Rutas absolutas para recursos críticos cuando está empaquetado
+  const sqlitePath =
+    process.env.SQLITE_STORAGE_PATH ||
+    (app.isPackaged
+      ? path.join(process.resourcesPath, 'backend', 'database.sqlite')
+      : path.join(backendDir, 'database.sqlite'));
+
+  const uploadsDir =
+    process.env.UPLOADS_DIR ||
+    (app.isPackaged
+      ? path.join(process.resourcesPath, 'backend', 'uploads')
+      : path.join(backendDir, 'uploads'));
+
+  const env = {
+    ...process.env,
+    NODE_ENV: app.isPackaged ? 'production' : 'development',
+    PORT: process.env.BACKEND_PORT || '3000',
+
+    // 👇 impresora (ajústalo si hace falta)
+    PRINTER_MOCK: process.env.PRINTER_MOCK ?? 'false',
+    PRINTER_HOST: process.env.PRINTER_HOST || '192.168.1.100',
+    PRINTER_PORT: process.env.PRINTER_PORT || '9100',
+    PRINTER_ENCODING: process.env.PRINTER_ENCODING || 'CP437',
+    PRINTER_LINE_WIDTH: process.env.PRINTER_LINE_WIDTH || '32',
+
+    // 👇 rutas absolutas para que Sequelize/Express no fallen
+    SQLITE_STORAGE_PATH: sqlitePath,
+    UPLOADS_DIR: uploadsDir,
+  };
+
+  console.log('[Electron] backend cwd:', backendDir);
+  console.log('[Electron] env.SQLITE_STORAGE_PATH:', env.SQLITE_STORAGE_PATH);
+  console.log('[Electron] env.UPLOADS_DIR:', env.UPLOADS_DIR);
+
+  try {
+    backendProc = fork(entry, [], {
+      env,
+      stdio: 'pipe',
+      cwd: backendDir, // 👈 MUY IMPORTANTE: el hijo verá rutas relativas desde /backend
+    });
+    backendProc.on('spawn', () => console.log('[Electron] backend spawn OK:', entry));
+    backendProc.on('exit', (code) => console.log('[Electron] backend exit:', code));
+    backendProc.stdout?.on('data', (d) => process.stdout.write(`[BE] ${d}`));
+    backendProc.stderr?.on('data', (d) => process.stderr.write(`[BE] ${d}`));
+  } catch (e) {
+    console.error('[Electron] error starting backend:', e);
+  }
+}
+
+function stopBackend() {
+  try { if (backendProc && !backendProc.killed) backendProc.kill('SIGTERM'); }
+  catch (e) { console.warn('[Electron] error stopping backend:', e.message); }
+  finally { backendProc = null; }
+}
+
+function createWindow() {
+  const win = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  const preloadPath = path.join(__dirname, 'preload.cjs');
+  console.log('[Electron] preload path:', preloadPath, 'exists:', fs.existsSync(preloadPath));
+
+  win.webContents.on('did-fail-load', (_e, code, desc, url) => {
+    console.error('[Electron] did-fail-load', { code, desc, url });
+    win.webContents.openDevTools({ mode: 'detach' });
+  });
+  win.webContents.on('did-finish-load', () => {
+    console.log('[Electron] did-finish-load');
+    win.show();
+    // Deja esto activo hasta que todo funcione; luego lo quitas
+    win.webContents.openDevTools({ mode: 'detach' });
+  });
+  win.webContents.on('console-message', (_e, level, message) => {
+    console.log(`[Renderer:${level}]`, message);
+  });
+
+  if (isDev) {
   startBackend();
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000/';
-  try { await waitForBackend(backendUrl); console.log('✅ Backend listo:', backendUrl); }
-  catch (err) { console.warn('⚠️ Backend no respondió a tiempo:', err.message); }
-
-  mainWindow = new BrowserWindow({
-    width: 1024,
-    height: 768,
-    webPreferences: { nodeIntegration: true, contextIsolation: false },
-  });
-
-  // URL frontend
-  const startUrl = isDev()
-    ? process.env.ELECTRON_START_URL || 'http://localhost:5173'
-    : `file://${path.join(process.resourcesPath, 'app', 'dist', 'index.html')}`;
-
-  console.log('🔎 startUrl:', startUrl);
-  console.log('📂 ¿Existe index.html?', fs.existsSync(path.join(process.resourcesPath, 'app', 'dist', 'index.html')));
-
-  mainWindow.loadURL(startUrl);
-
-  if (isDev()) mainWindow.webContents.openDevTools({ mode: 'detach' });
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-    if (backendProcess) {
-      try { backendProcess.kill(); } 
-      catch (e) { console.warn('⚠️ Error cerrando backendProcess:', e); }
-    }
-  });
+  waitForBackend({ url: 'http://127.0.0.1:3000/api/health', tries: 80, intervalMs: 250 })
+    .catch((e) => console.warn('[Electron] backend tarda en levantar (dev):', e.message))
+    .finally(async () => {
+      await new Promise(r => setTimeout(r, 400)); // 👍 colchón extra
+      console.log('[Electron] Loading dev server:', VITE_DEV_SERVER);
+      win.loadURL(VITE_DEV_SERVER);
+    });
+} else {
+  startBackend();
+  waitForBackend({ url: 'http://127.0.0.1:3000/api/health', tries: 80, intervalMs: 250 })
+    .catch((e) => console.warn('[Electron] backend tarda en levantar (prod):', e.message))
+    .finally(async () => {
+      await new Promise(r => setTimeout(r, 400)); // 👍 colchón extra
+      const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
+      console.log('[Electron] Loading file:', indexPath);
+      win.loadFile(indexPath);
+    });
 }
 
-// Evita múltiples instancias
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
+
+  return win;
+}
+
 const gotTheLock = app.requestSingleInstanceLock();
-if (!gotTheLock) app.quit();
-else {
+if (!gotTheLock) {
+  app.quit();
+} else {
   app.on('second-instance', () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
+    const win = BrowserWindow.getAllWindows()[0];
+    if (win) { if (win.isMinimized()) win.restore(); win.focus(); }
   });
 
-  app.whenReady().then(createWindow);
-  app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
-  app.on('activate', () => { if (!mainWindow) createWindow(); });
+  app.whenReady().then(() => {
+    createWindow();
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+
+  app.on('window-all-closed', () => {
+    stopBackend();
+    if (process.platform !== 'darwin') app.quit();
+  });
 }
+
+ipcMain.handle('ping', async () => 'pong');

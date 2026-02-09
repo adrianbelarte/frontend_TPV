@@ -7,15 +7,15 @@
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
-    "tailwind:init": "tailwindcss init -p",
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "electron:dev": "electron electron/main.js",
-    "clean": "rimraf dist dist_electron",
-    "dist": "npm run clean && npm run build && electron-builder",
-    "verify-build": "node scripts/verify-build.js"
+ "tailwind:init": "tailwindcss init -p",
+  "dev": "concurrently -n VITE,WAIT,ELECTRON \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:5173\" \"cross-env NODE_ENV=development VITE_DEV_SERVER=http://localhost:5173 electron .\"",
+  "build": "vite build",
+  "lint": "eslint .",
+  "preview": "vite preview",
+  "electron:dev": "cross-env NODE_ENV=production electron .",
+  "clean": "node scripts/clean.js",
+  "dist": "npm run clean && npm run build && electron-builder",
+  "verify-build": "node scripts/verify-build.js"
   },
   "dependencies": {
     "axios": "^1.11.0",
@@ -28,13 +28,16 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@tailwindcss/postcss": "^4.1.14",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
     "@vitejs/plugin-react": "^4.5.2",
     "autoprefixer": "^10.4.21",
-    "electron": "^37.4.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^37.7.0",
     "electron-builder": "^26.0.12",
     "electron-is-dev": "^3.0.1",
     "eslint": "^9.31.0",
@@ -44,25 +47,39 @@
     "globals": "^16.2.0",
     "postcss": "^8.5.6",
     "rimraf": "^5.0.0",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^4.1.14",
     "typescript": "~5.8.3",
-    "vite": "^7.0.5"
+    "vite": "^7.0.5",
+    "wait-on": "^9.0.1"
   },
-"build": {
+  "build": {
   "appId": "com.grupomanhattan.tpv",
   "productName": "TPV Grupo Manhattan",
-  "directories": { "output": "dist_electron" },
+  "directories": {
+    "output": "dist_electron"
+  },
   "files": [
-    "electron/**/*",
+    "electron/**/*",     
+    "dist/**/*",        
     "package.json"
   ],
   "extraResources": [
-    { "from": "dist", "to": "app/dist", "filter": ["**/*"] },
-    { "from": "../backend", "to": "backend", "filter": ["**/*"] },
-    { "from": "../backend/node_modules", "to": "backend/node_modules", "filter": ["**/*"] }
+    {
+      "from": "../backend",
+      "to": "backend",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "../backend/node_modules",
+      "to": "backend/node_modules",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "build/README_Cliente.txt",
+      "to": "README_Cliente.txt"
+    }
   ],
   "asarUnpack": [
-    "app/dist/**/*",
     "backend/**/*"
   ],
   "asar": true,

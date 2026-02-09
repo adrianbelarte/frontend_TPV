@@ -6,10 +6,10 @@ import Totales from "./Totales";
 import CategoriaSelector from "./CategoriaSelector";
 import ProductoGrid from "./ProductoGrid";
 import { TicketGenerado, type TicketData } from "../../components/Ticket/TicketGenerado";
-import type { Producto } from "../../types/producto"; 
+
+import type { Producto } from "../../types/producto";
 import type { Categoria } from "../../types/categoria";
-import type { VentaItem } from "../../types/venta";  
-import "./Home.css";
+import type { VentaItem } from "../../types/venta";
 
 const MODO_SIMULACION = import.meta.env.VITE_MODO_SIMULACION === "true";
 
@@ -89,72 +89,95 @@ export default function Home() {
 
   const pagar = async (tipo: "efectivo" | "tarjeta") => {
     setTipoPago(tipo);
-    try {
-      const fecha = new Date().toLocaleString();
-      const total = venta.reduce((s, i) => s + i.cantidad * i.producto.precio, 0);
 
+    if (venta.length === 0) {
+      alert("No hay productos en la venta");
+      return;
+    }
+
+    const fecha = new Date().toLocaleString();
+    const total = venta.reduce(
+      (s, i) => s + Number(i.cantidad) * Number(i.producto.precio),
+      0
+    );
+    const totalFixed = Number(total.toFixed(2));
+
+    try {
       await api.post("/tickets", {
         tipo_pago: tipo,
         fecha,
-        total,
+        total: totalFixed,
         productos: venta.map((i) => ({
           productoId: i.producto.id,
           cantidad: i.cantidad,
         })),
       });
+    } catch (e: any) {
+      alert("Error guardando ticket: " + (e?.message || "Desconocido"));
+      return;
+    }
 
+    try {
       if (!MODO_SIMULACION) {
         await api.post("/imprimir", {
           fecha,
           productos: venta.map((i) => ({
             nombre: i.producto.nombre,
             cantidad: i.cantidad,
+            precio: Number(i.producto.precio),
           })),
-          total: total.toFixed(2),
+          total: totalFixed,
           tipo_pago: tipo,
+          empresa: { nombre: "TPV Grupo Manhattan" },
         });
       } else {
-        console.log("Simulación de impresión:", { fecha, productos: venta, total, tipo_pago: tipo });
-        alert("Ticket simulado en pantalla");
+        console.log("Simulación de impresión:", { fecha, productos: venta, total: totalFixed, tipo_pago: tipo });
       }
-
-      setTicketGenerado({
-        fecha,
-        productos: venta.map((i) => ({
-          nombre: i.producto.nombre,
-          cantidad: i.cantidad,
-        })),
-        total: total.toFixed(2),
-        tipo_pago: tipo,
-      });
-
-      setVenta([]);
-      setInput("");
     } catch (e: any) {
-      alert(e.message);
+      console.warn("Fallo imprimiendo ticket:", e);
+      alert("Ticket guardado, pero falló la impresión.");
     }
+
+    setTicketGenerado({
+      fecha,
+      productos: venta.map((i) => ({
+        nombre: i.producto.nombre,
+        cantidad: i.cantidad,
+      })),
+      total: totalFixed.toFixed(2),
+      tipo_pago: tipo,
+    });
+
+    setVenta([]);
+    setInput("");
   };
 
   const totalVenta = venta.reduce(
-    (acc, item) => acc + item.cantidad * item.producto.precio,
+    (acc, item) => acc + Number(item.cantidad) * Number(item.producto.precio),
     0
   );
 
   return (
-    <div className="home-container">
-      <div className="panel-venta">
+    <div className="flex h-full w-full gap-4 p-3 text-gray-800">
+      {/* Panel de venta */}
+      <div className="w-1/3 h-[700px] flex flex-col gap-3 p-4 bg-white rounded-lg shadow-md">
         <VentaPanel venta={venta} eliminarProd={eliminarProd} />
         <Totales input={input} totalVenta={totalVenta} pagar={pagar} />
       </div>
 
-      <div className="productos">
+      {/* Panel de productos */}
+      <div className="w-2/3 h-[700px] flex flex-col p-4 bg-white rounded-lg shadow-md border border-gray-200">
         <CategoriaSelector categorias={categorias} filtrarCategoria={filtrarCategoria} />
         <ProductoGrid productos={productosVisibles} onAgregar={agregarProd} />
       </div>
 
       {ticketGenerado && (
-        <div className="ticket-preview">
-          <TicketGenerado ticket={ticketGenerado} modoSimulacion={MODO_SIMULACION} tipoPago={tipoPago} />
+        <div className="absolute right-4 bottom-16 bg-white p-3 rounded-md shadow-lg border border-gray-200">
+          <TicketGenerado
+            ticket={ticketGenerado}
+            modoSimulacion={MODO_SIMULACION}
+            tipoPago={tipoPago}
+          />
         </div>
       )}
     </div>
