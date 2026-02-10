@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { abrirCajon } from "../utils/cajon"; // 👈 NUEVO
 import {
   FaHome,
   FaCashRegister,
@@ -11,15 +12,19 @@ import {
 export default function Footer() {
   const { isLoggedIn, logout } = useAuth();
 
-  const abrirCajon = () => {
-    alert("Abriendo cajón...");
-    // más adelante puedes llamar a la API de abrir cajón si está disponible
+  // 👇 MEJORADA: función con async/await
+  const handleAbrirCajon = async () => {
+    try {
+      await abrirCajon();
+      alert("💰 Cajón abierto correctamente");
+    } catch (error) {
+      alert("❌ Error al abrir el cajón");
+    }
   };
 
   return (
     <footer className="h-[50px] flex items-center justify-between bg-neutral-300 border-t border-neutral-400 px-6 text-sm text-gray-700 select-none">
       <ul className="flex items-center gap-6">
-        {/* Home */}
         <li>
           <Link
             to="/"
@@ -30,16 +35,14 @@ export default function Footer() {
           </Link>
         </li>
 
-        {/* Cajón */}
         <li
-          onClick={abrirCajon}
+          onClick={handleAbrirCajon}
           className="flex items-center gap-2 cursor-pointer hover:text-blue-600 transition-colors"
         >
           <FaCashRegister className="text-lg" />
           <span>Cajón</span>
         </li>
 
-        {/* Admin */}
         <li>
           <Link
             to="/admin"

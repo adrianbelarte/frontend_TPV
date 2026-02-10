@@ -16,3 +16,16 @@ export type Ticket = {
   total: number;
   productos: ProductoConTicketProducto[];
 };
+
+export interface TicketData {
+  fecha: string;
+  productos: Array<{
+    nombre: string;
+    cantidad: number;
+    precio?: number; // 👈 asegúrate de tener esto
+  }>;
+  total: string;
+  tipo_pago: "efectivo" | "tarjeta";
+  efectivoRecibido?: number;  // 👈 NUEVO
+  cambio?: number;             // 👈 NUEVO
+}

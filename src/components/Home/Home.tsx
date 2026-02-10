@@ -5,7 +5,9 @@ import VentaPanel from "./VentaPanel";
 import Totales from "./Totales";
 import CategoriaSelector from "./CategoriaSelector";
 import ProductoGrid from "./ProductoGrid";
+import Calculadora from "../../components/Calculadora"; // 👈 NUEVO
 import { TicketGenerado, type TicketData } from "../../components/Ticket/TicketGenerado";
+import { abrirCajon } from "../../utils/cajon"; // 👈 NUEVO
 
 import type { Producto } from "../../types/producto";
 import type { Categoria } from "../../types/categoria";
@@ -20,6 +22,9 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [ticketGenerado, setTicketGenerado] = useState<TicketData | null>(null);
   const [tipoPago, setTipoPago] = useState<"efectivo" | "tarjeta">("efectivo");
+  
+  // 👇 NUEVOS ESTADOS
+  const [mostrarCalculadora, setMostrarCalculadora] = useState(false);
 
   useEffect(() => {
     api.get<Categoria[]>("/categorias")
@@ -87,13 +92,26 @@ export default function Home() {
     });
   };
 
+  // 👇 MODIFICADA: Función pagar separada en efectivo/tarjeta
   const pagar = async (tipo: "efectivo" | "tarjeta") => {
-    setTipoPago(tipo);
-
     if (venta.length === 0) {
       alert("No hay productos en la venta");
       return;
     }
+
+    // Si es efectivo, abrir calculadora
+    if (tipo === "efectivo") {
+      setMostrarCalculadora(true);
+      return;
+    }
+
+    // Si es tarjeta, procesar directamente
+    await procesarPagoTarjeta();
+  };
+
+  // 👇 NUEVA: Procesar pago con tarjeta (sin calculadora)
+  const procesarPagoTarjeta = async () => {
+    setTipoPago("tarjeta");
 
     const fecha = new Date().toLocaleString();
     const total = venta.reduce(
@@ -104,7 +122,7 @@ export default function Home() {
 
     try {
       await api.post("/tickets", {
-        tipo_pago: tipo,
+        tipo_pago: "tarjeta",
         fecha,
         total: totalFixed,
         productos: venta.map((i) => ({
@@ -127,11 +145,11 @@ export default function Home() {
             precio: Number(i.producto.precio),
           })),
           total: totalFixed,
-          tipo_pago: tipo,
+          tipo_pago: "tarjeta",
           empresa: { nombre: "TPV Grupo Manhattan" },
         });
       } else {
-        console.log("Simulación de impresión:", { fecha, productos: venta, total: totalFixed, tipo_pago: tipo });
+        console.log("Simulación de impresión:", { fecha, productos: venta, total: totalFixed, tipo_pago: "tarjeta" });
       }
     } catch (e: any) {
       console.warn("Fallo imprimiendo ticket:", e);
@@ -143,9 +161,95 @@ export default function Home() {
       productos: venta.map((i) => ({
         nombre: i.producto.nombre,
         cantidad: i.cantidad,
+        precio: Number(i.producto.precio),
       })),
       total: totalFixed.toFixed(2),
-      tipo_pago: tipo,
+      tipo_pago: "tarjeta",
+    });
+
+    setVenta([]);
+    setInput("");
+  };
+
+  // 👇 NUEVA: Confirmar desde calculadora (efectivo)
+  const handleConfirmarCalculadora = async (efectivo: number, cambio: number) => {
+    setTipoPago("efectivo");
+    setMostrarCalculadora(false);
+
+    const fecha = new Date().toLocaleString();
+    const total = venta.reduce(
+      (s, i) => s + Number(i.cantidad) * Number(i.producto.precio),
+      0
+    );
+    const totalFixed = Number(total.toFixed(2));
+
+    // 1. Abrir cajón físico
+    try {
+      await abrirCajon();
+    } catch (error) {
+      console.error("Error abriendo cajón:", error);
+      // Continuar con el proceso aunque falle el cajón
+    }
+
+    // 2. Guardar ticket en BD
+    try {
+      await api.post("/tickets", {
+        tipo_pago: "efectivo",
+        fecha,
+        total: totalFixed,
+        productos: venta.map((i) => ({
+          productoId: i.producto.id,
+          cantidad: i.cantidad,
+        })),
+      });
+    } catch (e: any) {
+      alert("Error guardando ticket: " + (e?.message || "Desconocido"));
+      return;
+    }
+
+    // 3. Imprimir ticket
+    try {
+      if (!MODO_SIMULACION) {
+        await api.post("/imprimir", {
+          fecha,
+          productos: venta.map((i) => ({
+            nombre: i.producto.nombre,
+            cantidad: i.cantidad,
+            precio: Number(i.producto.precio),
+          })),
+          total: totalFixed,
+          tipo_pago: "efectivo",
+          efectivo_recibido: efectivo, // 👈 NUEVO
+          cambio: cambio, // 👈 NUEVO
+          empresa: { nombre: "TPV Grupo Manhattan" },
+        });
+      } else {
+        console.log("Simulación de impresión:", { 
+          fecha, 
+          productos: venta, 
+          total: totalFixed, 
+          tipo_pago: "efectivo",
+          efectivo_recibido: efectivo,
+          cambio: cambio
+        });
+      }
+    } catch (e: any) {
+      console.warn("Fallo imprimiendo ticket:", e);
+      alert("Ticket guardado, pero falló la impresión.");
+    }
+
+    // 4. Mostrar ticket generado
+    setTicketGenerado({
+      fecha,
+      productos: venta.map((i) => ({
+        nombre: i.producto.nombre,
+        cantidad: i.cantidad,
+        precio: Number(i.producto.precio),
+      })),
+      total: totalFixed.toFixed(2),
+      tipo_pago: "efectivo",
+      efectivoRecibido: efectivo, // 👈 NUEVO
+      cambio: cambio, // 👈 NUEVO
     });
 
     setVenta([]);
@@ -170,6 +274,15 @@ export default function Home() {
         <CategoriaSelector categorias={categorias} filtrarCategoria={filtrarCategoria} />
         <ProductoGrid productos={productosVisibles} onAgregar={agregarProd} />
       </div>
+
+      {/* 👇 NUEVO: Modal Calculadora */}
+      {mostrarCalculadora && (
+        <Calculadora
+          total={totalVenta}
+          onConfirmar={handleConfirmarCalculadora}
+          onCancelar={() => setMostrarCalculadora(false)}
+        />
+      )}
 
       {ticketGenerado && (
         <div className="absolute right-4 bottom-16 bg-white p-3 rounded-md shadow-lg border border-gray-200">

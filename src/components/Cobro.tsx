@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent } from "react";
-import { imprimirTicket } from "../utils/imprimirTicket";
+import { imprimirTicket } from "../utils/impresion";
 import type { TicketData } from "../components/Ticket/TicketGenerado";
 
 const MODO_SIMULACION = import.meta.env.VITE_MODO_SIMULACION === "true";

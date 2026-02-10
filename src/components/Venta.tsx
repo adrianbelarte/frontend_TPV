@@ -4,10 +4,16 @@ import type { VentaItem, MetodoPago } from "../types/venta";
 interface VentaProps {
   venta: VentaItem[];
   onPagar: (metodo: MetodoPago) => void;
+  onPagarEfectivo: () => void; // 👈 NUEVO handler para efectivo
   onEliminarProducto: (productoId: number) => void;
 }
 
-const Venta: FC<VentaProps> = ({ venta, onPagar, onEliminarProducto }) => {
+const Venta: FC<VentaProps> = ({ 
+  venta, 
+  onPagar, 
+  onPagarEfectivo, // 👈 RECIBE el nuevo handler
+  onEliminarProducto 
+}) => {
   const total = venta.reduce(
     (sum, item) => sum + item.cantidad * item.producto.precio,
     0
@@ -32,7 +38,8 @@ const Venta: FC<VentaProps> = ({ venta, onPagar, onEliminarProducto }) => {
         <strong>Total:</strong> {total.toFixed(2)} €
       </p>
 
-      <button onClick={() => onPagar("efectivo")}>Cobrar en efectivo</button>
+      {/* 👇 CAMBIO: ahora usa onPagarEfectivo en lugar de onPagar("efectivo") */}
+      <button onClick={onPagarEfectivo}>Cobrar en efectivo</button>
       <button onClick={() => onPagar("tarjeta")}>Cobrar con tarjeta</button>
     </div>
   );

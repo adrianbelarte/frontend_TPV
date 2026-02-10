@@ -1,96 +1,88 @@
-import React from "react";
-import { imprimirTicket } from "../../utils/impresion"; // 👈 nueva utilidad unificada
-import { useEmpresa } from "../../hooks/useEmpresa";     // 👈 hook para mostrar cabecera en simulación
+// src/components/Ticket/TicketGenerado.tsx
 
-export interface TicketProduct {
-  nombre: string;
-  cantidad: number;
-  precio?: number;
-}
+import type { FC } from "react";
 
 export interface TicketData {
-  fecha: string | Date;
-  productos: TicketProduct[];
-  total: number | string;
-  tipo_pago?: "efectivo" | "tarjeta" | "bizum";
+  fecha: string;
+  productos: Array<{
+    nombre: string;
+    cantidad: number;
+    precio?: number;
+  }>;
+  total: string;
+  tipo_pago: "efectivo" | "tarjeta";
+  efectivoRecibido?: number;  // 👈 NUEVO
+  cambio?: number;             // 👈 NUEVO
 }
 
 interface TicketGeneradoProps {
   ticket: TicketData;
   modoSimulacion: boolean;
-  tipoPago: "efectivo" | "tarjeta" | "bizum";
+  tipoPago: "efectivo" | "tarjeta";
 }
 
-export const TicketGenerado: React.FC<TicketGeneradoProps> = ({
-  ticket,
-  modoSimulacion,
-  tipoPago,
+export const TicketGenerado: FC<TicketGeneradoProps> = ({ 
+  ticket, 
+  modoSimulacion, 
+  tipoPago 
 }) => {
-  const { empresa } = useEmpresa();
-
-  React.useEffect(() => {
-    if (!modoSimulacion) {
-      imprimirTicket(ticket, tipoPago);
-    }
-  }, [ticket, tipoPago, modoSimulacion]);
-
-  if (!modoSimulacion) return null; // no pintar UI en impresión real
-
   return (
-    <div className="mx-auto w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-4 text-sm shadow-sm">
-      {/* Cabecera empresa en simulación */}
-      <div className="mb-3 text-center">
-        {empresa?.nombre && (
-          <p className="font-semibold text-neutral-900">{empresa.nombre}</p>
-        )}
-        {empresa?.direccion && (
-          <p className="text-neutral-600">{empresa.direccion}</p>
-        )}
-        {(empresa?.telefono || empresa?.correo) && (
-          <p className="text-neutral-600">
-            {empresa.telefono ? `Tel: ${empresa.telefono}` : ""}
-            {empresa.telefono && empresa.correo ? " · " : ""}
-            {empresa.correo || ""}
-          </p>
-        )}
-        {empresa?.cif && <p className="text-neutral-600">CIF: {empresa.cif}</p>}
-        <p className="mt-1 text-neutral-700">
-          {typeof ticket.fecha === "string"
-            ? ticket.fecha
-            : new Date(ticket.fecha).toLocaleString()}
-        </p>
+    <div className="max-w-xs p-4 bg-white border border-gray-300 rounded-lg shadow-md font-mono text-sm">
+      <div className="text-center border-b border-gray-300 pb-2 mb-2">
+        <h3 className="font-bold text-lg">TPV Grupo Manhattan</h3>
+        <p className="text-xs text-gray-600">{ticket.fecha}</p>
       </div>
 
-      <hr className="my-2 border-neutral-200" />
-
-      <div className="space-y-1">
-        {ticket.productos.map((p, i) => (
-          <div key={i} className="flex items-center justify-between">
+      <div className="mb-3">
+        {ticket.productos.map((prod, idx) => (
+          <div key={idx} className="flex justify-between py-1">
             <span>
-              {p.cantidad} × {p.nombre}
+              {prod.nombre} x{prod.cantidad}
             </span>
-            {typeof p?.precio === "number" && (
-              <span className="tabular-nums">{(p.cantidad * p.precio).toFixed(2)} €</span>
+            {prod.precio && (
+              <span>{(prod.precio * prod.cantidad).toFixed(2)} €</span>
             )}
           </div>
         ))}
       </div>
 
-      <hr className="my-2 border-neutral-200" />
-
-      <div className="flex items-center justify-between font-semibold">
-        <span>Total</span>
-        <span className="tabular-nums">
-          {typeof ticket.total === "number"
-            ? ticket.total.toFixed(2)
-            : ticket.total}{" "}
-          €
-        </span>
+      <div className="border-t border-gray-300 pt-2 mb-2">
+        <div className="flex justify-between font-bold text-base">
+          <span>TOTAL:</span>
+          <span>{ticket.total} €</span>
+        </div>
       </div>
 
-      <p className="mt-3 text-center text-xs text-neutral-500">
+      <div className="border-t border-gray-300 pt-2 mb-2">
+        <div className="flex justify-between">
+          <span>Método de pago:</span>
+          <span className="font-semibold uppercase">{tipoPago}</span>
+        </div>
+      </div>
+
+      {/* 👇 NUEVO: Mostrar efectivo y cambio */}
+      {ticket.tipo_pago === "efectivo" && ticket.efectivoRecibido && (
+        <div className="border-t border-gray-300 pt-2 mb-2 bg-green-50 p-2 rounded">
+          <div className="flex justify-between text-green-700">
+            <span>Efectivo recibido:</span>
+            <span className="font-semibold">{ticket.efectivoRecibido.toFixed(2)} €</span>
+          </div>
+          <div className="flex justify-between text-green-800 font-bold">
+            <span>Cambio:</span>
+            <span>{ticket.cambio?.toFixed(2)} €</span>
+          </div>
+        </div>
+      )}
+
+      {modoSimulacion && (
+        <div className="text-center text-xs text-orange-600 mt-2 italic">
+          (Modo simulación)
+        </div>
+      )}
+
+      <div className="text-center text-xs text-gray-500 mt-3 border-t border-gray-200 pt-2">
         Gracias por su compra
-      </p>
+      </div>
     </div>
   );
 };
