@@ -1,4 +1,5 @@
 // frontend/electron/main.js (ESM)
+import http from 'node:http';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

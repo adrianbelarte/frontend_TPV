@@ -1,39 +1,35 @@
-# Proyecto Frontend
+# TPV – Frontend (React + TypeScript + Vite) + Electron
 
-Proyecto frontend basado en React, TypeScript y Vite, con configuración de ESLint para mantener un código limpio y consistente.
+Aplicación TPV desarrollada con **React + TypeScript + Vite** y empaquetada como app de escritorio con **Electron**.
+Incluye configuración de **ESLint** y utilidades para build y distribución.
 
 ---
 
-## Tecnologías usadas
+## Tecnologías
 
 - React 19.x
 - TypeScript 5.x
-- Vite 4.x (bundler y servidor de desarrollo)
-- ESLint (con soporte para React y hooks)
-- PostCSS y Autoprefixer (para procesar CSS)
-- React DOM
+- Vite 4.x
+- Electron
+- ESLint
+- PostCSS + Autoprefixer
+- TailwindCSS (config incluido)
 
 ---
 
 ## Requisitos
 
-- Node.js v16 o superior
-- npm v8 o superior
+- Node.js **16+** (recomendado **18 LTS** o superior)
+- npm **8+**
+
+> Nota: En Windows, si vas a generar instalador, conviene tener permisos de escritura y dependencias habituales de build.
 
 ---
 
 ## Instalación
 
-1. Clona este repositorio
+1) Clona el repositorio:
 
 ```bash
 git clone <url-del-repositorio>
-cd frontend
-
-Instalación
-
--npm install
--npm create vite .
--npm install react-router-dom
--npm run dev
-
+cd frontend_TPV-main
